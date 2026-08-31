@@ -1,0 +1,149 @@
+import {
+  Blocks,
+  Code2,
+  Database,
+  PenTool,
+  Sparkles,
+  TrendingUp,
+  type LucideIcon,
+} from "lucide-react";
+
+/** 実績の種別。`content/works/*.md` の frontmatter `type` と対応する。 */
+export const WORK_TYPES = [
+  "corporate",
+  "web-service",
+  "ec",
+  "lp",
+  "wordpress",
+] as const;
+
+export type WorkType = (typeof WORK_TYPES)[number];
+
+export const WORK_TYPE_LABELS: Record<WorkType, string> = {
+  corporate: "コーポレートサイト",
+  "web-service": "Webサービス / 管理画面",
+  ec: "ECサイト",
+  lp: "LP",
+  wordpress: "WordPressサイト",
+};
+
+/** 実績での関与範囲。 */
+export const WORK_ROLES = ["design", "development", "pm"] as const;
+
+export type WorkRole = (typeof WORK_ROLES)[number];
+
+export const WORK_ROLE_LABELS: Record<WorkRole, string> = {
+  design: "Design",
+  development: "Dev",
+  pm: "PM",
+};
+
+/**
+ * スキル。トップの「できること」セクションで使う。
+ * `tile` は globals.css の `--tile-N`（blue → violet の6段）に対応する。
+ */
+export const skills: {
+  title: string;
+  lines: string[];
+  icon: LucideIcon;
+  tile: 1 | 2 | 3 | 4 | 5 | 6;
+}[] = [
+  {
+    title: "UIデザイン",
+    icon: PenTool,
+    tile: 1,
+    lines: [
+      "大規模なSaaS系管理画面や業務システムのUI/UX設計・改善を中心に対応できます。",
+      "デザインシステムを0ベースで構築・運用した経験があり、HCDの考え方に基づいた情報設計から画面設計まで一貫して行えます。",
+      "コーポレートサイトやLP、バナーなどの制作にも対応可能です。",
+    ],
+  },
+  {
+    title: "フロントエンド開発",
+    icon: Code2,
+    tile: 2,
+    lines: [
+      "ReactやNext.js、Vue、Tailwindなどを用いたWebアプリケーション開発に幅広く対応できます。",
+      "TypeScriptによる実装を基本とし、小規模の開発ディレクションも行えます。",
+      "HTML/CSSコーディングやJavaScriptによる動的処理といった制作系の実装も対応可能です。",
+    ],
+  },
+  {
+    title: "バックエンド開発",
+    icon: Database,
+    tile: 3,
+    lines: [
+      "Laravelを用いたDBが絡む開発に対応でき、テーブル設計やデータ構造の検討から実装まで行えます。",
+      "要件定義に基づいたシステム設計・API設計も対応可能です。",
+      "WordPressのオリジナルテーマ制作やフルスクラッチでの機能開発にも対応できます。",
+    ],
+  },
+  {
+    title: "施策立案",
+    icon: TrendingUp,
+    tile: 4,
+    lines: [
+      "事業部と連携し、サービスの課題抽出から施策の立案・実行・効果測定までを一貫して行えます。",
+      "Googleアナリティクスなどを用いた定量データ分析やKPI設計、CVR改善などの実績があります。",
+      "ジャーニーマップやユーザーストーリーの作成を通じた現状把握・要件定義も得意です。",
+    ],
+  },
+  {
+    title: "AI開発",
+    icon: Sparkles,
+    tile: 5,
+    lines: [
+      "Claude Codeを軸に、デザインから実装まで一気通貫でAIを活用したサービス開発・運用を行えます。",
+      "チーム開発におけるAIワークフローの設計（ルール整備・生産性改善）にも取り組んでいます。",
+      "AIを前提とした開発プロセスの構築を、実務ベースで進めています。",
+    ],
+  },
+  {
+    title: "その他",
+    icon: Blocks,
+    tile: 6,
+    lines: [
+      "STUDIOなどのノーコード・ローコードツールでのサイト構築、Shopifyを用いたECサイト構築・導入サポートに対応できます。",
+      "CRMやASPの導入、API連携など、要件に応じて幅広く対応可能です。",
+    ],
+  },
+];
+
+/** About の略歴。フリーランス（＝事務所の設立）を最後の項目にする。 */
+export const timeline: {
+  period: string;
+  title: string;
+  description: string;
+}[] = [
+  {
+    period: "—",
+    title: "東京デザイン専門学校 卒業",
+    description: "グラフィック / Webデザインの基礎を学ぶ。",
+  },
+  {
+    period: "—",
+    title: "株式会社メンバーズ",
+    description: "Web制作・ディレクション。大規模サイトの運用に携わる。",
+  },
+  {
+    period: "2020年4月 —",
+    title: "ITDクリエイティブ事務所として独立",
+    description:
+      "不動産業界を中心にデザイン・開発を受託。総合不動産企業での常駐等を通じて、売買・賃貸のドメイン知識を獲得。現在はUIデザインからフロントエンド・サーバーサイド開発まで一貫して請け負っている。",
+  },
+];
+
+/**
+ * トップの導入文。
+ * headline を2トーンの見出しに、body を補足として出す。
+ */
+export const intro = {
+  headline: "デザインから運用まで、",
+  headlineMuted: "プロダクトを一気通貫で",
+  body: [
+    // "UIデザインとフロントエンド開発を軸に、Webサイトとサービスの制作を行う個人事務所です。",
+    // "近年はサービスの課題・施策検討、定量データ分析、Claude Codeを用いたサービス運用などの領域も対応しています。",
+    "UIデザインとフロントエンド開発を軸に、新卒から約10年間Web業界に従事。",
+    "近年は、プロダクトの課題・施策検討、定量データの分析、Claude Codeを用いたサービス運用など、幅広い領域に携わっています。",
+  ],
+};

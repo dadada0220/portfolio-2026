@@ -1,36 +1,46 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ポートフォリオサイト
 
-## Getting Started
+UIデザイナー / フロントエンドエンジニアの個人サイト。管理画面風の白黒UI。
 
-First, run the development server:
+## セットアップ
 
 ```bash
+npm install
+cp .env.example .env.local   # 値を埋める
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 環境変数
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| キー | 用途 | 未設定時 |
+|---|---|---|
+| `NOTION_TOKEN` | Notion Integration のトークン | Articles が「API失敗」の空状態になる |
+| `NOTION_DB_DESIGN` / `NOTION_DB_DEVELOP` / `NOTION_DB_OTHER` | 3つのブックマークDBのID | 同上 |
+| `RESEND_API_KEY` | お問い合わせフォームの送信 | 送信時にエラーを返す（サイトは動く） |
+| `CONTACT_TO_EMAIL` / `CONTACT_FROM_EMAIL` | 問い合わせの宛先 / 差出人 | `lib/site.ts` の値にフォールバック |
+| `NEXT_PUBLIC_SITE_URL` | OGPの絶対URL・sitemap | `https://example.com` |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## コマンド
 
-## Learn More
+| コマンド | 内容 |
+|---|---|
+| `npm run dev` | 開発サーバー |
+| `npm run build` | 本番ビルド |
+| `npm start` | ビルド結果を起動 |
+| `npm run lint` | ESLint |
+| `npx tsc --noEmit` | 型チェック |
 
-To learn more about Next.js, take a look at the following resources:
+## ドキュメント
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `docs/design-doc.md` — 設計書
+- `docs/design-system.md` — デザインシステム要約（UIを書く前に読む）
+- `docs/resources.md` — 外部リソースの使い分け
+- `docs/style-guide.html` — スタイルガイド（ブラウザで開く）
+- `CLAUDE.md` — AI向けの実装ルール
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## コンテンツの追加
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **実績** — `content/works/*.md` を追加する。ファイル名と frontmatter の `slug` を一致させる。
+  frontmatter は `src/lib/works.ts` の zod スキーマで検証され、不正ならビルドが落ちる
+- **記事** — Notion側で追加する。ISR（1時間）で自動反映される
+- **スキル・略歴・つくれるサイト** — `src/lib/profile.ts`

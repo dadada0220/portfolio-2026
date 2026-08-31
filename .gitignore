@@ -39,3 +39,16 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# ---- 認証情報 ----
+# シークレットキーの類は絶対にコミットしない。
+# 新しく鍵やトークンを含むファイルを作るときは、必ずここに追記してから作成する。
+docs/notion.md
+*.pem
+*.key
+secrets.*
+**/credentials*.json
+**/service-account*.json
+
+# .env.example だけは中身が空のテンプレートなのでコミットする
+!.env.example

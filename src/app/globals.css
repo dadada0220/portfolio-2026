@@ -1,26 +1,374 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@custom-variant dark (&:is(.dark *));
 
+/* ============================================================
+   デザイントークン
+   値の出典: docs/design-doc.md §2.2 / docs/style-guide.html
+   アクセント: Blue (#2563EB)
+   ここ以外の場所に生の色値を書かない。
+   ============================================================ */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --font-heading: var(--font-sans);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-elevated: var(--elevated);
+  --color-destructive: var(--destructive);
+  --color-star: var(--star);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+  /* 影は 2 段階だけ。shadow-sm=既定 / shadow-md=ポップオーバー・ドロワー */
+  --shadow-xs: var(--elevation-sm);
+  --shadow-sm: var(--elevation-sm);
+  --shadow-md: var(--elevation);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+:root {
+  /* Neutral — zinc 系（純グレーよりわずかに寒色） */
+  --background: hsl(0 0% 100%);
+  --foreground: hsl(240 10% 3.9%);
+  --card: hsl(0 0% 100%);
+  --card-foreground: hsl(240 10% 3.9%);
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(240 10% 3.9%);
+  --elevated: hsl(240 5% 98%);
+  --muted: hsl(240 4.8% 95.9%);
+  --muted-foreground: hsl(240 3.8% 46.1%);
+  --accent: hsl(240 4.8% 95.9%);
+  --accent-foreground: hsl(240 5.9% 10%);
+  --secondary: hsl(240 4.8% 95.9%);
+  --secondary-foreground: hsl(240 5.9% 10%);
+  --border: hsl(240 5.9% 90%);
+  --border-strong: hsl(240 5% 84%);
+  --input: hsl(240 5.9% 90%);
+  --destructive: hsl(0 72% 45%);
+  --destructive-foreground: hsl(0 0% 98%);
+  /* お気に入り（☆）だけに使う黄色。primary とは別の意味を持つので独立させる */
+  --star: hsl(43 96% 46%);
+
+  /* Primary — 唯一の彩色。主アクション / アクティブなナビ / フォーカスリングのみ */
+  --primary: hsl(221 83% 53%);
+  --primary-foreground: hsl(0 0% 100%);
+  --ring: hsl(221 83% 53%);
+
+  /* サイドバーはニュートラルに寄せる（アクティブ表現だけ primary） */
+  --sidebar: hsl(240 5% 98%);
+  --sidebar-foreground: hsl(240 10% 3.9%);
+  --sidebar-primary: hsl(221 83% 53%);
+  --sidebar-primary-foreground: hsl(0 0% 100%);
+  --sidebar-accent: hsl(240 4.8% 95.9%);
+  --sidebar-accent-foreground: hsl(240 5.9% 10%);
+  --sidebar-border: hsl(240 5.9% 90%);
+  --sidebar-ring: hsl(221 83% 53%);
+
+  /* チャートは未使用。モノクロスケールで確保だけしておく */
+  --chart-1: hsl(240 5% 84%);
+  --chart-2: hsl(240 4% 65%);
+  --chart-3: hsl(240 4% 46%);
+  --chart-4: hsl(240 5% 34%);
+  --chart-5: hsl(240 6% 20%);
+
+  --radius: 0.5rem;
+
+  /* ---- グラデーション ----
+     primary(blue) から violet へ抜ける1つの系統だけを使う。
+     色数を増やさずに階調で表情を出すのが狙い（無関係な色を足さない） */
+  --brand-from: hsl(221 83% 53%);
+  --brand-to: hsl(258 80% 62%);
+  --gradient-brand: linear-gradient(135deg, var(--brand-from), var(--brand-to));
+
+  /* セクションの下地。ほぼ白だがわずかに温度差をつける */
+  --gradient-surface: linear-gradient(
+    180deg,
+    hsl(240 20% 98.5%),
+    hsl(0 0% 100%) 60%
+  );
+  /* ヒーローの背後に敷く淡いにじみ */
+  --gradient-glow: radial-gradient(
+    60% 100% at 15% 0%,
+    hsl(221 83% 53% / 0.09),
+    transparent 70%
+  ),
+  radial-gradient(50% 90% at 85% 10%, hsl(258 80% 62% / 0.07), transparent 70%);
+
+  /* スキルカードのアイコンタイル。blue → violet を6段に割る */
+  --tile-1: linear-gradient(135deg, hsl(221 83% 56%), hsl(232 80% 62%));
+  --tile-2: linear-gradient(135deg, hsl(232 80% 56%), hsl(243 78% 63%));
+  --tile-3: linear-gradient(135deg, hsl(243 78% 58%), hsl(254 76% 64%));
+  --tile-4: linear-gradient(135deg, hsl(254 76% 58%), hsl(265 74% 64%));
+  --tile-5: linear-gradient(135deg, hsl(265 74% 58%), hsl(276 72% 63%));
+  --tile-6: linear-gradient(135deg, hsl(210 12% 42%), hsl(220 10% 30%));
+
+  /* 影は 2 段階まで。sm が既定、無印はポップオーバー/ドロワー専用 */
+  --elevation-sm: 0 1px 2px 0 hsl(240 6% 10% / 0.05);
+  --elevation:
+    0 1px 3px 0 hsl(240 6% 10% / 0.08), 0 1px 2px -1px hsl(240 6% 10% / 0.06);
+
+  /* 欧文は Noto Sans、和文は游ゴシック（OS標準）。
+     Noto Sans は latin しか持たないので、和文は自動的に次点へ落ちる */
+  --font-sans:
+    var(--font-noto-sans), "Yu Gothic Medium", "游ゴシック Medium", YuGothic,
+    "游ゴシック体", "Yu Gothic", "游ゴシック", "Hiragino Sans",
+    "Hiragino Kaku Gothic ProN", Meiryo, system-ui, sans-serif;
+  /* 数値・ドメイン・ラベル用。字面は游ゴシックのまま、数字だけ等幅に揃える */
+  --font-mono: var(--font-sans);
+
+  color-scheme: light;
+}
+
+/* ダークモードは v1 スコープ外。トークンだけ先に用意しておく（.dark を付ければ効く） */
+.dark {
+  --background: hsl(240 10% 3.9%);
+  --foreground: hsl(0 0% 98%);
+  --card: hsl(240 7% 6.5%);
+  --card-foreground: hsl(0 0% 98%);
+  --popover: hsl(240 7% 6.5%);
+  --popover-foreground: hsl(0 0% 98%);
+  --elevated: hsl(240 6% 9%);
+  --muted: hsl(240 4% 14%);
+  --muted-foreground: hsl(240 5% 64.9%);
+  --accent: hsl(240 4% 14%);
+  --accent-foreground: hsl(0 0% 98%);
+  --secondary: hsl(240 4% 14%);
+  --secondary-foreground: hsl(0 0% 98%);
+  --border: hsl(240 4% 17%);
+  --border-strong: hsl(240 4% 24%);
+  --input: hsl(240 4% 17%);
+  --destructive: hsl(0 72% 58%);
+  --destructive-foreground: hsl(0 0% 98%);
+  --star: hsl(43 96% 56%);
+
+  --primary: hsl(217 91% 65%);
+  --primary-foreground: hsl(240 10% 6%);
+  --ring: hsl(217 91% 65%);
+
+  --sidebar: hsl(240 6% 9%);
+  --sidebar-foreground: hsl(0 0% 98%);
+  --sidebar-primary: hsl(217 91% 65%);
+  --sidebar-primary-foreground: hsl(240 10% 6%);
+  --sidebar-accent: hsl(240 4% 14%);
+  --sidebar-accent-foreground: hsl(0 0% 98%);
+  --sidebar-border: hsl(240 4% 17%);
+  --sidebar-ring: hsl(217 91% 65%);
+
+  --chart-1: hsl(240 4% 24%);
+  --chart-2: hsl(240 4% 34%);
+  --chart-3: hsl(240 5% 46%);
+  --chart-4: hsl(240 4% 65%);
+  --chart-5: hsl(240 5% 84%);
+
+  --brand-from: hsl(217 91% 65%);
+  --brand-to: hsl(258 90% 72%);
+  --gradient-surface: linear-gradient(
+    180deg,
+    hsl(240 8% 8%),
+    hsl(240 10% 3.9%) 60%
+  );
+  --gradient-glow: radial-gradient(
+    60% 100% at 15% 0%,
+    hsl(217 91% 65% / 0.14),
+    transparent 70%
+  ),
+  radial-gradient(50% 90% at 85% 10%, hsl(258 90% 72% / 0.1), transparent 70%);
+
+  --elevation-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.4);
+  --elevation:
+    0 1px 3px 0 hsl(0 0% 0% / 0.5), 0 1px 2px -1px hsl(0 0% 0% / 0.4);
+
+  color-scheme: dark;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    /* 管理画面の情報密度に合わせて本文基準は 14px */
+    font-size: 14px;
+    line-height: 1.65;
+  }
+  html {
+    @apply font-sans antialiased;
+  }
+  /* --font-mono は游ゴシックと同じなので、等幅らしさは数字の字送りで作る */
+  .font-mono {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.01em;
+  }
+  /* 和文見出しの字間を詰める（design-doc §2.3） */
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-feature-settings: "palt" 1;
+  }
+  /* lucide のストローク幅を 1.75 に統一（design-doc §2.5） */
+  svg.lucide {
+    stroke-width: 1.75;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ============================================================
+   Markdown 本文（実績詳細・記事モーダル）
+   @tailwindcss/typography は入れず、design-system.md のタイポ定義で組む
+   ============================================================ */
+@layer components {
+  .prose-work {
+    @apply flex flex-col gap-4 text-sm leading-relaxed;
+  }
+  .prose-work > * + h2 {
+    @apply mt-4;
+  }
+  .prose-work h2 {
+    @apply text-lg font-bold tracking-tight;
+  }
+  .prose-work h3 {
+    @apply text-sm font-medium;
+  }
+  .prose-work p {
+    @apply text-muted-foreground;
+  }
+  .prose-work ul {
+    @apply flex list-disc flex-col gap-1 pl-5 text-muted-foreground;
+  }
+  .prose-work ol {
+    @apply flex list-decimal flex-col gap-1 pl-5 text-muted-foreground;
+  }
+  /* 箇条書きの丸だけアクセントカラーにする（数字は色を変えない） */
+  .prose-work ul > li::marker {
+    color: var(--primary);
+  }
+  .prose-work a {
+    @apply text-foreground underline underline-offset-4;
+  }
+  .prose-work strong {
+    @apply font-medium text-foreground;
+  }
+  .prose-work code {
+    @apply rounded-sm bg-muted px-1 py-0.5 font-mono text-xs;
+  }
+  .prose-work pre {
+    @apply overflow-x-auto rounded-lg border bg-muted p-4 font-mono text-xs;
+  }
+  .prose-work pre code {
+    @apply bg-transparent p-0;
+  }
+  .prose-work blockquote {
+    @apply border-l-2 pl-4 text-muted-foreground;
+  }
+  .prose-work img {
+    @apply h-auto max-w-full rounded-lg border;
+  }
+  /* テーブル。幅が足りないときは横スクロールさせる（GitHub の markdown と同じ手法） */
+  .prose-work table {
+    @apply block w-max max-w-full table-auto overflow-x-auto border-collapse text-sm;
+  }
+  .prose-work thead {
+    @apply bg-muted;
+  }
+  .prose-work th {
+    @apply border px-3 py-2 text-left font-bold text-foreground;
+  }
+  .prose-work td {
+    @apply border px-3 py-2 align-top text-muted-foreground;
+  }
+  .prose-work tbody tr:nth-child(even) {
+    @apply bg-muted/40;
+  }
+  .prose-work hr {
+    @apply border-t;
+  }
+}
+
+/* ============================================================
+   グラデーションのユーティリティ
+   生の色値はここ（globals.css）の外に書かない
+   ============================================================ */
+@utility bg-brand {
+  background-image: var(--gradient-brand);
+}
+
+/* 主アクションのボタン用。ホバーで background-position を動かせるよう広く敷いておく */
+@utility bg-brand-sweep {
+  background-image: var(--gradient-brand);
+  background-size: 220% 100%;
+  background-position: 0% 50%;
+}
+
+@utility text-brand {
+  background-image: var(--gradient-brand);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@utility bg-surface-gradient {
+  background-image: var(--gradient-surface);
+}
+
+@utility bg-glow {
+  background-image: var(--gradient-glow);
+}
+
+/* スキルカードのアイコンタイル */
+@layer components {
+  .tile-1 { background-image: var(--tile-1); }
+  .tile-2 { background-image: var(--tile-2); }
+  .tile-3 { background-image: var(--tile-3); }
+  .tile-4 { background-image: var(--tile-4); }
+  .tile-5 { background-image: var(--tile-5); }
+  .tile-6 { background-image: var(--tile-6); }
+}
+
+/* ============================================================
+   なめらかな角丸（スーパー楕円）
+   corner-shape に未対応のブラウザでは通常の border-radius にフォールバックする
+   ============================================================ */
+@utility pill {
+  border-radius: calc(infinity * 1px);
+  corner-shape: superellipse(4);
+}
+
+@utility corner-smooth {
+  corner-shape: superellipse(4);
 }
