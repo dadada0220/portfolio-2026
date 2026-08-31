@@ -1,0 +1,424 @@
+# ポートフォリオサイト 実装設計書
+
+- 作成日: 2026-08-30
+- 用途: Claude Code による実装のインプット（リポジトリ直下 or `docs/` に配置して参照させる想定）
+- ステータス: v1（実装前ドラフト）
+
+---
+
+## 1. 概要
+
+自分の情報を集約するパーソナルサイト。ポートフォリオ（実績・スキル・略歴）に加え、Notionで管理しているブックマーク記事（design / develop / other）を表示する。
+
+- CMSは使わない。実績はリポジトリ内のMarkdownで管理、自己紹介等は静的実装
+- 記事のみNotion APIから取得（表示はカテゴリ別）
+- UIは「管理画面（ダッシュボード）風」。白黒ベース、プライマリボタンのみアクセントカラー
+- 今後のAI開発の土台になるよう、デザインシステム（トークン・コンポーネント規約）を先に定義する
+
+### ターゲットと目的
+
+| ターゲット | 見せたいもの | ゴール |
+|---|---|---|
+| クリエイティブ職（デザイナー・エンジニア） | 実績・スキル・略歴 | 力量と守備範囲の把握 |
+| 非クリエイティブ職（発注検討者など） | 作れるサイトの種別 → 実績への導線 | 「何を頼めるか」が数分でわかる |
+
+トップは非クリエイティブ職でも迷わない構成にし、深い情報（スキル詳細・実績詳細）は1階層下に置く。
+
+---
+
+## 2. デザインシステム定義
+
+> 実装より先にここを確定させる。以降のすべてのUI実装はこの節に従う。逸脱が必要な場合はこのドキュメントを先に更新する。
+
+### 2.1 デザイン原則
+
+1. **Calm & Dense** — 管理画面らしい情報密度。装飾より整列・余白・タイポで階層を作る
+2. **Monochrome first** — 色は意味を持つときだけ使う。プライマリアクションのみ彩色、それ以外はニュートラルスケールで表現
+3. **Motion is opt-in** — アニメーションは状態変化の理解を助けるときだけ（参考: emilkowal.ski/ui/you-dont-need-animations）。ホバー・出現系は控えめに統一
+
+### 2.2 カラートークン
+
+shadcn/ui の CSS variables 規約に準拠（Tailwind v4 の `@theme` にマップ）。ベースは zinc 系ニュートラル。
+
+```css
+:root {
+  /* Neutral (白黒ベース) */
+  --background: 0 0% 100%;
+  --foreground: 240 10% 3.9%;        /* zinc-950相当 */
+  --card: 0 0% 100%;
+  --card-foreground: 240 10% 3.9%;
+  --muted: 240 4.8% 95.9%;           /* zinc-100 */
+  --muted-foreground: 240 3.8% 46.1%;/* zinc-500 */
+  --border: 240 5.9% 90%;            /* zinc-200 */
+  --input: 240 5.9% 90%;
+  --ring: 240 10% 3.9%;
+
+  /* Primary: 唯一の彩色。プライマリボタン・フォーカスリング系のみに使用 */
+  --primary: 221 83% 53%;            /* blue-600 目安。1色なら差し替え容易 */
+  --primary-foreground: 0 0% 100%;
+
+  /* secondary/destructive等はshadcnデフォルト(モノクロ寄り)を踏襲 */
+  --radius: 0.5rem;
+}
+```
+
+運用ルール:
+
+- `--primary` を使ってよいのは: プライマリボタン、送信ボタン、（必要なら）アクティブなナビインジケータのみ
+- リンクは下線 + foreground（青リンクにしない）。カテゴリバッジ等もモノクロ（`muted` 背景 + `foreground` 文字）
+- ダークモードは v1 ではスコープ外だが、トークン経由で色を参照していれば後から `.dark` を足すだけで対応可能な状態を保つ（生の色値をコンポーネントに書かない）
+
+### 2.3 タイポグラフィ
+
+| トークン | 用途 | サイズ/ウェイト |
+|---|---|---|
+| `text-2xl font-semibold tracking-tight` | ページタイトル (h1) | 24px / 600 |
+| `text-lg font-semibold` | セクション見出し (h2) | 18px / 600 |
+| `text-sm font-medium` | カード見出し・ラベル | 14px / 500 |
+| `text-sm text-muted-foreground` | 本文・説明文 | 14px / 400 |
+| `text-xs text-muted-foreground` | メタ情報（日付・タグ） | 12px / 400 |
+
+- フォント: `Inter`（欧文）+ `Noto Sans JP`（和文）。`font-feature-settings: "palt"` を和文見出しに適用
+- 管理画面らしく本文基準は 14px。マーケサイト的な大文字ヒーローは作らない
+
+### 2.4 スペーシング・レイアウト
+
+- 4pxグリッド（Tailwindデフォルト）。カード内 padding は `p-4`〜`p-6`、セクション間は `gap-6` / `gap-8` に統一
+- アプリシェル: 左サイドバー（`w-60`、モバイルはSheetでドロワー化）+ ヘッダー（`h-14`, sticky）+ メインコンテンツ（`max-w-5xl mx-auto p-6`）
+- カード境界は `border` + `rounded-lg`。影は `shadow-sm` まで（重い影は使わない）
+
+### 2.5 コンポーネント
+
+**ベース: shadcn/ui**（コピー&オウン方式でカスタマイズ性を確保）。v1で導入するもの:
+
+`button` `card` `badge` `tabs` `toggle-group` `dialog` `separator` `sheet` `input` `textarea` `label` `skeleton` `tooltip` `scroll-area`
+
+追加の独自コンポーネント（`components/` 直下、shadcn流儀で作る）:
+
+| コンポーネント | 役割 |
+|---|---|
+| `AppShell` / `SideNav` / `PageHeader` | ダッシュボードレイアウト。SideNavの各項目にlucideアイコン。PageHeaderはタイトル+説明+アクションのスロット |
+| `StatCard` | トップの数値サマリ（経験年数・資格など） |
+| `SkillItem` | 見出し+説明文のスキル表示 |
+| `WorkCard` / `WorkMeta` | 実績一覧カード / 詳細のメタ情報（役割・期間・スタック） |
+| `ArticleToolbar` | カテゴリTabs + タグchip + ☆フィルタ + リスト/カード切替 |
+| `ArticleRow` / `ArticleCard` | 記事の行 / カード（サムネイル付き）。両方ともクリックで詳細モーダル |
+| `ArticleDialog` | Notionページ本文を表示するモーダル |
+| `Thumbnail` | サムネイル + レターマーク/読み込み失敗のフォールバック |
+| `EmptyState` | 絞り込み0件 / API失敗の空状態 |
+
+アイコン: **lucide-react を標準**（shadcn同梱）。サイズは 15px / 13px / 18px の3段階、`stroke-width: 1.75` に統一。**サイドバーの各ナビ項目にアイコンを付け**、アクティブ時のみ `--primary` に着色する（背景の変化と合わせて現在地を示す）。
+
+アニメーション方針: `tailwindcss-animate` の enter/exit のみ。ページ遷移アニメーションは付けない。
+
+### 2.6 外部リソースの使い分け
+
+> **体験は借りる、トンマナは自前。**
+> 優れたコンポーネントを見つけたら「何が起きるか・どういう順序で起きるか」だけを抜き出し、見た目は §2 のトークンで組み直す。デザインを丸ごとコピーしない。
+
+全部をそのまま取り込むとトンマナが崩れるので、**コードを持ち込んでよい範囲**で3つに分類する。
+
+| 区分 | 意味 |
+|---|---|
+| **A: そのまま入れる** | shadcnと同じCSS変数を参照するもの。コピーした瞬間に自分のトークンに従う |
+| **B: 体験だけ借りる** | 挙動は優れているが独自の色・モーション・基盤を持つもの。**コードは持ち込まず**インタラクションだけ真似て自前で組む |
+| **C: 判断基準として読ませる** | コードではなく観点を提供するもの。実装後のレビューでエージェントに渡す |
+
+| 区分 | リソース | 正体 | 使いどころ |
+|---|---|---|---|
+| A | lucide-react | shadcn同梱のアイコンセット | **標準。** アイコンは原則すべてここから |
+| A | reui.io | shadcn互換のコンポーネント集（同じCSS変数を参照） | shadcn本体に無いものだけ取りに行く（Data Grid / Filters / Timeline / File Upload） |
+| B | rareui.com | Motion製のアニメーションコンポーネント | Duration Picker / OTP Input のような**入力体験の発明**だけ読む。見た目は持ち込まない |
+| B | coss.com/ui | Base UI ベースのコンポーネント集 | Command Palette やドロワーの**挙動の参考**のみ。基盤（Radix vs Base UI）が違うので混ぜない |
+| B | lucide-animated.com | lucideと同じ字形のアニメーション版 | **状態変化を伝えるときだけ**（メニュー開閉・コピー完了・読込中）。装飾では使わない |
+| C | refactoring-ui-plugin | Refactoring UI の原則をClaude Codeから使うプラグイン | 各フェーズ完了時のUIレビューパスで実行 |
+| C | ui-skills.com | UI向けスキル集（CLI / MCP でagentに接続） | a11y・モーションの点検時に呼ぶ。フェーズ6で使用 |
+| C | designsystemchecklist.com | デザインシステムの網羅チェックリスト | **v1では Color / Typography / Layout / Core components の4項目だけ**通す |
+| C | emilkowal.ski | 「You don't need animations」の記事 | 1回読んで §2.1 の Motion is opt-in に反映済み。都度参照は不要 |
+
+**持ち込み前の3つの確認**
+
+1. **色は `hsl(var(--*))` で書かれているか？** — 生の hex / oklch / Tailwindのカラークラス（`bg-blue-500` 等）が入っていたら、トークンに置き換えてから入れる。置き換えが大仕事ならコードを捨てて自前で組む
+2. **独自の角丸・影・フォントを持ち込んでいないか？** — 角丸は `--radius` からの相対値、影は `--shadow-sm` / `--shadow` の2段階だけ
+3. **依存パッケージが増えるか？** — 増えるなら、その1コンポーネントのために入れる価値があるか考える。Motion を1箇所のために入れるのは割に合わないことが多い
+
+**採用しないもの**
+
+- **reicon.dev** — lucide と役割が完全に重複する。アイコンセットを2つ混ぜるのがトンマナ崩壊の最短ルートなので採用しない。lucide に欲しい形が無かったときの避難先としてだけ記憶しておく
+- **rareui の装飾系コンポーネント**（Fluid Orb / Gravity Letters 等）— 白黒の管理画面トンマナと正面衝突する。「かっこいいから」で入ったモーションは Motion is opt-in 違反としてレビューで落とす
+
+### 2.7 AI開発のための運用（デザインシステムをAIに守らせる）
+
+- 本設計書の §2 を要約した `docs/design-system.md` をリポジトリに置き、`CLAUDE.md` から参照させる
+- §2.6 の表は `docs/resources.md` として切り出し、`CLAUDE.md` からリンクする
+- `CLAUDE.md` に最低限のルールを明記: 「色は必ずトークン経由」「新規UIはまず既存コンポーネントの組み合わせで検討」「shadcn追加時は `npx shadcn@latest add`」「外部コンポーネントは §2.6 の区分に従う」
+- **リソースは常時コンテキストに載せない。** 「参考実装を探すとき」「UIレビューのとき」にだけ `docs/resources.md` を読ませる。判断基準を常に全部持たせると逆にブレる
+- UIレビュー用に refactoring-ui-plugin を Claude Code に導入し、実装後のリファクタパスで使用
+
+---
+
+## 3. 情報設計・画面設計
+
+### 3.1 サイトマップ
+
+```
+/            トップ（Overview）
+/about       自己紹介・略歴・スキル詳細
+/works       実績一覧
+/works/[slug] 実績詳細（Markdown）
+/articles    ブックマーク記事（?category=design|develop|other をタブで切替）
+/contact     お問い合わせフォーム
+```
+
+サイドバーのナビ項目 = 上記6ページ。フッターは持たずサイドバー下部にSNS/メールリンクを置く（管理画面メタファーを崩さない）。
+
+### 3.2 各画面
+
+**トップ `/`（Overview — 非クリエイティブ職が主対象）**
+
+- PageHeader: 名前 / 肩書き（UIデザイナー & フロントエンドエンジニア）/ プライマリボタン「お問い合わせ」
+- StatCard列: 業界歴 10年+ ・ HCD-Net認定スペシャリスト ・ 対応領域（デザイン〜実装）
+- 「作れるサイト」セクション: 種別カードのグリッド（§4.2）。各カード→ `/works?type=xxx` へ導線
+- 直近の実績 3件（WorkCard）→「すべて見る」で `/works`
+- 平易な言葉を使い、専門用語はこのページでは避ける
+
+**About `/about`（クリエイティブ職が主対象）**
+
+- スキル一覧: SkillItem（見出し+説明文）を2カラムグリッドで（§4.1）
+- 略歴: 縦のタイムライン（§4.3）
+- スタンス短文: 「デザインを起点に、実装まで一貫して担当する」ことを明記（デザイン主軸のポジショニング）
+
+**Works `/works` / `/works/[slug]`**
+
+- 一覧: WorkCardグリッド。バッジで種別（Webサービス / コーポレート / EC / LP）と関与範囲（Design / Dev / PM）を表示。サムネイルは任意（無い場合はモノクロのプレースホルダーで成立するデザインにする — テキスト中心の実績が多い前提）
+- 詳細: Markdownレンダリング。冒頭にWorkMeta（役割 / 期間 / スタック / 種別）、本文は「課題 → 取り組み → 成果」の型で書く
+
+**Articles `/articles`**
+
+ツールバー + 一覧 + 詳細モーダルの3層構成。
+
+*ツールバー*
+
+| 要素 | 挙動 |
+|---|---|
+| カテゴリTabs | すべて / Design / Develop / Other。カテゴリ = DBの分かれ方（後述） |
+| タグchip | 複数選択（OR）。**選択中カテゴリのタグのみ表示**。タグ語彙はDBごとに異なるため「すべて」選択時はタグ行を出さない |
+| ☆のみ | チェックボックスプロパティでの絞り込みトグル |
+| 表示切替 | リスト / カードのToggleGroup。既定はリスト |
+
+状態はURLクエリに持たせる（`?cat=design&view=card&tags=UI,AI&star=1`）。リロード・共有・戻るで再現できる。
+
+*一覧（2形式）*
+
+- **リスト（既定）**: 1行に ☆・favicon・タイトル・概要・種別・タグ・ドメイン・日付。情報量が多くストックを探すのに速い
+- **カード**: 16:9サムネイル + 種別 + タイトル + 概要2行 + タグ + ドメイン/日付。サムネイルで思い出したいとき用
+
+*詳細モーダル*
+
+Notionページ本文に情報を書いているケース用（件数は少ないが、そちらが本体のこともある）。行/カードのクリックで開く。
+
+- Next.js の **Parallel Routes + Intercepting Routes** で `/articles/[pageId]` に紐づける。一覧から開けばモーダル、URL直打ちなら単独ページ。ブラウザバックで閉じられ、共有もできる
+- 本文ブロックは**モーダルを開いた時に初めて取得**する（一覧生成時には取得しない）
+- 表示内容: 種別・☆・タイトル・URL・概要・タグ・会社名・作成日時・本文ブロック・「サイトを開く」
+
+*状態*
+
+ロード中はSkeleton。空状態は2種類（絞り込み0件 / API失敗）。Notion API失敗時もサイト全体は落とさない。
+
+**Contact `/contact`**
+
+- フォーム: 名前 / メール / 本文（+ honeypot）。送信ボタンがサイト内で最も目立つprimary使用箇所
+- 送信は Server Action → Resend でメール送信。成功/失敗のフィードバックをインラインで表示
+
+---
+
+## 4. コンテンツ設計（草案）
+
+> 文章はすべて草案。実装時はこのままプレースホルダーとして入れてOK、公開前にDaisukeが確認・修正する。
+
+### 4.1 スキル（見出し+説明文）
+
+| 見出し | 説明文（草案） |
+|---|---|
+| UIデザイン | Figmaを用いた画面設計・プロトタイピング。HCDプロセスに基づき、ユーザー調査から情報設計・ビジュアルまで一貫して行える |
+| 人間中心設計（HCD） | HCD-Net認定 人間中心設計スペシャリスト。ユーザーインタビュー設計や評価を実務プロセスに組み込める |
+| フロントエンド開発 | Next.js / TypeScript / Tailwind CSS を中心に、デザインを損なわない実装まで自分で担当できる。アクセシビリティ・セマンティクスにも配慮 |
+| グロース・改善 | KPI設計、GA4を使った分析、CVR改善の企画〜検証まで。作って終わりでなく数値で改善を回せる |
+| WordPress・サーバー | WordPressのカスタム構築（カスタム投稿・ACF・セキュリティ対策）、CI/CDやサーバー設定まで含めた運用 |
+| チームリード・PM | エンジニアリングチームのリード経験。要件整理・進行管理・クライアントコミュニケーション |
+| AI駆動開発 | Claude Code等を活用した開発フローの設計・運用。MCP連携やスキル整備を含む |
+
+### 4.2 作れるサイト種別（非クリエイティブ職向け）
+
+| 種別 | ひとこと説明（草案） |
+|---|---|
+| コーポレートサイト | 会社の信頼感が伝わる、更新しやすいサイト |
+| Webサービス / 管理画面 | 使いやすさを設計したアプリケーションUI |
+| ECサイト | 購入までの導線を最適化したストア |
+| LP（ランディングページ） | 問い合わせ・申込みにつなげる1枚ページ |
+| WordPressサイト | 自分たちで更新できるブログ・メディア |
+
+### 4.3 略歴（草案 — 年表記は要確認）
+
+1. 東京デザイン専門学校 卒業
+2. 株式会社メンバーズ — Web制作・ディレクション
+3. 独立（個人事業）— 不動産業界を中心にデザイン・開発を受託。総合不動産企業での常駐等を通じて不動産（売買・賃貸）のドメイン知識を獲得
+4. 2025年1月〜 NecScat — エンジニアリングチームリーダー。デザイン・フロントエンド開発・PM/PdM
+
+### 4.4 実績サンプル（6件・混在方針）
+
+公開可のものは実名、クライアントワークは案件名をぼかす。以下をMarkdownサンプルとして初期投入:
+
+1. **modulesss.com**（実名・自主開発）— UIパーツ専用ギャラリーサイト。企画・デザイン・実装すべて担当。お気に入り機能・エクスポート機能
+2. **賃貸物件検索サービスのCVR改善**（ぼかし）— 検索・一覧UIの改善、GA4分析、KPI設計
+3. **クリエイター向け工数管理SaaS**（ぼかし）— ポイント制発注の業務システム。UI設計〜フロント実装
+4. **カーボンクレジット品質評価サービス**（ぼかし）— LPと調査画面のUIデザイン
+5. **制作会社マッチングメディアのリニューアル**（ぼかし）— サイトリニューアルのデザイン
+6. **不動産系サービスの店舗物件プラットフォーム**（ぼかし）— ドメイン知識を活かした情報設計・UI
+
+各記事の本文は「課題 → 取り組み → 成果」の3見出しで200〜400字程度のサンプルを入れる。
+
+---
+
+## 5. 技術構成
+
+| 項目 | 選定 | 理由 |
+|---|---|---|
+| フレームワーク | Next.js (App Router) + TypeScript | 既存スキルセット・ISR・Server Actions |
+| スタイリング | Tailwind CSS v4 + shadcn/ui | カスタマイズ性、デザイントークン運用 |
+| 実績 | ローカルMarkdown + gray-matter + 任意のMD→HTML変換（`next-mdx-remote` or `remark`） | CMS不要要件 |
+| 記事 | Notion API（`@notionhq/client`） | 既存のブックマークDBを流用 |
+| 更新反映 | ISR: `/articles` を `revalidate = 3600`（1時間） | Notion更新が自動で反映。手動再デプロイ不要 |
+| フォーム | Server Action + Resend | サーバーレスで完結、無料枠で十分 |
+| デプロイ | Vercel | ISR/Server Actionsがそのまま動く |
+| アイコン | lucide-react | shadcn標準 |
+
+### 5.1 Notion連携
+
+**カテゴリ = DBの分かれ方**。design / develop / other はプロパティではなく、それぞれ別データベース。3つのDB IDを環境変数で持ち、取得時にカテゴリを付与してマージする。
+
+```
+NOTION_TOKEN=
+NOTION_DB_DESIGN=
+NOTION_DB_DEVELOP=
+NOTION_DB_OTHER=
+```
+
+**プロパティ（実DBで確認済み）:**
+
+| プロパティ | 型 | UIでの扱い |
+|---|---|---|
+| タイトル | title | 行・カードの見出し |
+| URL | url | ドメイン表示 + 外部リンク先 |
+| 概要 | rich_text | 説明文（リスト1行 / カード2行でクランプ） |
+| 種別 | select | バッジ。絞り込み対象（例: ギャラリー / ツール / 記事） |
+| タグ | multi_select | チップ。絞り込み対象。**DBごとに語彙が異なる** |
+| 会社名 | rich_text | モーダル内のみ。空が多いので「未設定」を出す |
+| ☆ | checkbox | おすすめ印。絞り込み対象 |
+| 作成日時 | created_time | 並び順（新しい順）と日付表示 |
+
+種別・タグの値はハードコードせず、取得結果から動的に集計してチップを組み立てる（Notion側で値が増えても実装を触らない）。
+
+**取得方針** — `lib/notion.ts` に集約。
+
+- 3DBを並列クエリ → `{ ...page, category }` を付けてマージ → 作成日時の降順でソート
+- ページネーション（`has_more` / `next_cursor`）を最初から実装
+- Notion APIのレート制限は平均3req/sec。並列度は3程度に絞る（`p-limit` 等）
+
+**サムネイル** — Notionページの**1番目のブロックに置いている画像**を使う。
+
+- 一覧生成時に各ページの `blocks.children.list`（`page_size: 1`）を叩き、1件目が `image` なら採用
+- ⚠️ **Notionのファイル署名URLは約1時間で失効する。** URLをそのままHTMLに埋めるとキャッシュされたページで画像が切れるので、`/api/thumb/[pageId]` 経由で配信し、リクエストのたびにNotionから最新URLを引いて中継する（`Cache-Control` でCDNキャッシュ）
+- 画像がない/取得失敗の場合のフォールバックは**必須**。ドメイン頭文字のレターマーク → 読み込み失敗時は `onError` で image-off アイコンへ
+
+**その他**
+
+- faviconは `https://www.google.com/s2/favicons?domain=` を使用（`next/image` の `unoptimized` か `remotePatterns` を設定）
+- 本文ブロック取得は詳細モーダル用の別経路（`/api/articles/[pageId]`）。一覧では叩かない
+
+### 5.2 実績Markdownスキーマ
+
+```md
+---
+title: 賃貸物件検索サービスのCVR改善
+slug: rental-search-cvr        # ファイル名と一致させる
+type: web-service              # corporate | web-service | ec | lp | wordpress
+roles: [design, development, pm]
+period: 2025                   # 表示用の自由文字列
+stack: [Next.js, TypeScript, GA4]
+thumbnail: /works/rental-search.png   # 任意。無ければプレースホルダー表示
+published: true
+order: 1                       # 一覧の並び順
+---
+
+## 課題
+...
+
+## 取り組み
+...
+
+## 成果
+...
+```
+
+`content/works/*.md` に配置。`lib/works.ts` でパース・型付け（frontmatterはzodでバリデーション）。
+
+### 5.3 ディレクトリ構成
+
+```
+.
+├── CLAUDE.md                  # AI向け実装ルール（§2.6）
+├── docs/
+│   ├── design-doc.md          # 本書
+│   ├── design-system.md       # §2の要約（AIが常時参照する短縮版）
+│   └── resources.md           # §2.6 外部リソースの使い分け（必要時のみ読ませる）
+├── content/
+│   └── works/*.md             # 実績
+├── src/
+│   ├── app/
+│   │   ├── layout.tsx         # AppShell適用
+│   │   ├── page.tsx           # トップ
+│   │   ├── about/page.tsx
+│   │   ├── works/page.tsx
+│   │   ├── works/[slug]/page.tsx
+│   │   ├── articles/
+│   │   │   ├── page.tsx       # ISR (revalidate=3600)
+│   │   │   ├── [id]/page.tsx  # モーダルの単独ページ版
+│   │   │   └── @modal/(.)[id]/page.tsx  # Intercepting Route
+│   │   ├── api/
+│   │   │   ├── thumb/[pageId]/route.ts    # 署名URL失効対策の画像中継
+│   │   │   └── articles/[pageId]/route.ts # 本文ブロックのオンデマンド取得
+│   │   └── contact/{page.tsx, actions.ts}
+│   ├── components/
+│   │   ├── ui/                # shadcn（コピー&オウン）
+│   │   └── ...                # AppShell, SkillItem, WorkCard, ArticleRow等
+│   ├── lib/
+│   │   ├── notion.ts          # Notion取得・カテゴリマッピング
+│   │   ├── works.ts           # Markdownパース
+│   │   └── utils.ts
+│   └── styles/globals.css     # デザイントークン定義（§2.2）
+└── .env.local                 # NOTION_TOKEN, NOTION_DATABASE_ID, RESEND_API_KEY
+```
+
+---
+
+## 6. 実装フェーズ（Claude Codeでの進め方）
+
+| フェーズ | 内容 | 完了条件 |
+|---|---|---|
+| 0. 土台 | Next.js + Tailwind v4 + shadcn/ui セットアップ、トークン定義、CLAUDE.md / design-system.md / resources.md 作成 | トークンが反映されたButtonが表示できる |
+| 1. シェル | AppShell / SideNav / PageHeader、全ページの空実装とルーティング | 全ページをナビ遷移できる |
+| 2. 静的コンテンツ | トップ / About（スキル・略歴・作れるサイト） | §4の草案が表示される |
+| 3. Works | Markdownパイプライン、一覧・詳細、サンプル6件投入 | 6件が一覧・詳細で閲覧できる |
+| 4. Articles | 3DBのNotion連携、ツールバー（カテゴリ/タグ/☆）、リスト・カード切替、サムネイル取得と`/api/thumb`、詳細モーダル（Parallel + Intercepting Routes）、ISR、空状態 | 実データが絞り込み・両表示形式・モーダルで動く |
+| 5. Contact | フォーム + Server Action + Resend、バリデーション、honeypot | テスト送信がメールで届く |
+| 6. 仕上げ | メタデータ/OGP、レスポンシブ確認、refactoring-ui-plugin と ui-skills（a11y・motion）でUIレビュー、designsystemchecklist の4項目を通す、Vercelデプロイ | Lighthouse（Performance/a11y）90+、本番URLで公開 |
+
+各フェーズ後に必ず動作確認してから次へ。フェーズ4の最初のタスクは「NotionのAPIレスポンスをダンプして§5.1のスキーマ表を実プロパティ名で更新する」こと。
+
+## 7. 将来拡張（v1スコープ外）
+
+- ダークモード（トークン設計済みのため `.dark` 追加のみ）
+- 実績への画像ギャラリー / 事例スクリーンショット
+- 記事のNotion側での「おすすめ」フラグ → トップにピックアップ表示
+- 略歴・スキルの英語版

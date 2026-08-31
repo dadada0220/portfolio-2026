@@ -1,0 +1,2081 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ポートフォリオ デザインシステム</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500;700&display=swap">
+
+<style>
+/* ============================================================
+   TOKENS — light is defined on bare :root (complete palette)
+   ============================================================ */
+:root {
+  /* accent candidates are injected here by the switcher */
+  --accent-l: 221 83% 53%;
+  --accent-d: 217 91% 65%;
+
+  --background: 0 0% 100%;
+  --foreground: 240 10% 3.9%;
+  --card: 0 0% 100%;
+  --card-foreground: 240 10% 3.9%;
+  --elevated: 240 5% 98%;
+  --muted: 240 4.8% 95.9%;
+  --muted-foreground: 240 3.8% 46.1%;
+  --border: 240 5.9% 90%;
+  --border-strong: 240 5% 84%;
+  --input: 240 5.9% 90%;
+  --ring: var(--accent-l);
+  --primary: var(--accent-l);
+  --primary-foreground: 0 0% 100%;
+  --secondary: 240 4.8% 95.9%;
+  --secondary-foreground: 240 5.9% 10%;
+  --destructive: 0 72% 45%;
+
+  --radius: 0.5rem;
+  --shadow-sm: 0 1px 2px 0 hsl(240 6% 10% / 0.05);
+  --shadow: 0 1px 3px 0 hsl(240 6% 10% / 0.08), 0 1px 2px -1px hsl(240 6% 10% / 0.06);
+
+  --font-sans: "Inter", "Noto Sans JP", -apple-system, "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  color-scheme: light;
+}
+
+/* system dark (no stamp) — guarded so an explicit light choice wins */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 7% 6.5%;
+    --card-foreground: 0 0% 98%;
+    --elevated: 240 6% 9%;
+    --muted: 240 4% 14%;
+    --muted-foreground: 240 5% 64.9%;
+    --border: 240 4% 17%;
+    --border-strong: 240 4% 24%;
+    --input: 240 4% 17%;
+    --ring: var(--accent-d);
+    --primary: var(--accent-d);
+    --primary-foreground: 240 10% 6%;
+    --secondary: 240 4% 14%;
+    --secondary-foreground: 0 0% 98%;
+    --destructive: 0 72% 58%;
+    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.4);
+    --shadow: 0 1px 3px 0 hsl(0 0% 0% / 0.5), 0 1px 2px -1px hsl(0 0% 0% / 0.4);
+    color-scheme: dark;
+  }
+}
+
+/* explicit dark choice wins in both directions */
+:root[data-theme="dark"] {
+  --background: 240 10% 3.9%;
+  --foreground: 0 0% 98%;
+  --card: 240 7% 6.5%;
+  --card-foreground: 0 0% 98%;
+  --elevated: 240 6% 9%;
+  --muted: 240 4% 14%;
+  --muted-foreground: 240 5% 64.9%;
+  --border: 240 4% 17%;
+  --border-strong: 240 4% 24%;
+  --input: 240 4% 17%;
+  --ring: var(--accent-d);
+  --primary: var(--accent-d);
+  --primary-foreground: 240 10% 6%;
+  --secondary: 240 4% 14%;
+  --secondary-foreground: 0 0% 98%;
+  --destructive: 0 72% 58%;
+  --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.4);
+  --shadow: 0 1px 3px 0 hsl(0 0% 0% / 0.5), 0 1px 2px -1px hsl(0 0% 0% / 0.4);
+  color-scheme: dark;
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3, h4, p, ul, ol, figure, table { margin: 0; }
+ul { padding: 0; list-style: none; }
+a { color: inherit; }
+code, kbd { font-family: var(--font-mono); font-size: 0.86em; }
+:where(a, button, input, textarea, [tabindex]):focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+}
+html { scroll-behavior: smooth; }
+
+/* ============================================================
+   APP SHELL — the page is a rendering of the shell it documents
+   ============================================================ */
+.shell { display: grid; grid-template-columns: 240px minmax(0, 1fr); min-height: 100vh; }
+
+.sidebar {
+  border-right: 1px solid hsl(var(--border));
+  background: hsl(var(--elevated));
+  position: sticky; top: 0; height: 100vh;
+  display: flex; flex-direction: column;
+  overflow-y: auto;
+}
+.sidebar__brand {
+  height: 56px; flex: 0 0 56px;
+  display: flex; align-items: center; gap: 10px;
+  padding: 0 20px;
+  border-bottom: 1px solid hsl(var(--border));
+}
+.brand__mark {
+  width: 26px; height: 26px; flex: none;
+  border-radius: calc(var(--radius) - 2px);
+  background: hsl(var(--foreground));
+  color: hsl(var(--background));
+  display: grid; place-items: center;
+  font-size: 12px; font-weight: 700; letter-spacing: -0.02em;
+}
+.brand__text { font-size: 13px; font-weight: 600; letter-spacing: -0.01em; }
+.sidebar__nav { padding: 12px; display: flex; flex-direction: column; gap: 2px; }
+.navlabel {
+  padding: 12px 8px 6px;
+  font-size: 11px; font-weight: 500; letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+}
+.navlink {
+  display: flex; align-items: center; gap: 9px;
+  padding: 7px 8px;
+  border-radius: calc(var(--radius) - 2px);
+  font-size: 13px; font-weight: 500;
+  color: hsl(var(--muted-foreground));
+  text-decoration: none;
+  transition: background-color .12s ease, color .12s ease;
+}
+.navlink:hover { background: hsl(var(--muted)); color: hsl(var(--foreground)); }
+.navlink[aria-current="true"] { background: hsl(var(--muted)); color: hsl(var(--foreground)); }
+.navlink__dot {
+  width: 5px; height: 5px; border-radius: 50%; flex: none;
+  background: hsl(var(--border-strong));
+  transition: background-color .12s ease, transform .12s ease;
+}
+.navlink[aria-current="true"] .navlink__dot { background: hsl(var(--primary)); transform: scale(1.3); }
+
+/* icons */
+.ico {
+  width: 15px; height: 15px; flex: none;
+  stroke: currentColor; fill: none;
+  stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round;
+}
+.ico--sm { width: 13px; height: 13px; }
+.ico--lg { width: 18px; height: 18px; }
+.navlink .ico { color: hsl(var(--muted-foreground)); transition: color .12s ease; }
+.navlink:hover .ico { color: hsl(var(--foreground)); }
+.navlink[aria-current="true"] .ico { color: hsl(var(--primary)); }
+.mock__nav .ico { width: 13px; height: 13px; color: hsl(var(--muted-foreground)); }
+.mock__nav--on .ico { color: hsl(var(--primary)); }
+.sidebar__foot {
+  margin-top: auto; padding: 14px 20px;
+  border-top: 1px solid hsl(var(--border));
+  font-size: 11px; color: hsl(var(--muted-foreground));
+  font-family: var(--font-mono);
+}
+
+.main { min-width: 0; display: flex; flex-direction: column; }
+.topbar {
+  position: sticky; top: 0; z-index: 20;
+  height: 56px; flex: none;
+  display: flex; align-items: center; gap: 16px;
+  padding: 0 24px;
+  border-bottom: 1px solid hsl(var(--border));
+  background: hsl(var(--background) / 0.85);
+  backdrop-filter: blur(8px);
+}
+.topbar__title { font-size: 13px; font-weight: 500; color: hsl(var(--muted-foreground)); }
+.topbar__tools { margin-left: auto; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.toolgroup { display: flex; align-items: center; gap: 7px; }
+.toolgroup__label {
+  font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase;
+  color: hsl(var(--muted-foreground)); font-weight: 500;
+}
+
+.content { padding: 32px 24px 96px; max-width: 1060px; width: 100%; }
+.pagehead { padding-bottom: 28px; border-bottom: 1px solid hsl(var(--border)); margin-bottom: 8px; }
+.pagehead h1 { font-size: 24px; font-weight: 600; letter-spacing: -0.02em; text-wrap: balance; }
+.pagehead p { margin-top: 8px; color: hsl(var(--muted-foreground)); max-width: 62ch; }
+
+/* ============================================================
+   SECTIONS
+   ============================================================ */
+.section { padding-top: 48px; scroll-margin-top: 72px; }
+.section__head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 6px; }
+.section__num {
+  font-family: var(--font-mono); font-size: 11px;
+  color: hsl(var(--muted-foreground));
+  padding-top: 2px;
+}
+.section h2 { font-size: 18px; font-weight: 600; letter-spacing: -0.015em; }
+.section__desc { color: hsl(var(--muted-foreground)); margin-bottom: 20px; max-width: 66ch; }
+.section h3 {
+  font-size: 12px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+  margin: 28px 0 12px;
+}
+
+.card {
+  background: hsl(var(--card)); color: hsl(var(--card-foreground));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+.card--pad { padding: 20px; }
+.stack { display: flex; flex-direction: column; gap: 16px; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+.grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+
+/* ============================================================
+   TABLES
+   ============================================================ */
+.tablewrap { overflow-x: auto; border: 1px solid hsl(var(--border)); border-radius: var(--radius); }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+.tablewrap table { min-width: 620px; }
+th {
+  text-align: left; font-weight: 500; font-size: 11px;
+  letter-spacing: 0.05em; text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+  padding: 10px 14px; background: hsl(var(--muted) / 0.55);
+  border-bottom: 1px solid hsl(var(--border));
+  white-space: nowrap;
+}
+td { padding: 10px 14px; border-bottom: 1px solid hsl(var(--border)); vertical-align: middle; }
+tbody tr:last-child td { border-bottom: 0; }
+td.mono, th.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 12px; }
+td.tight { white-space: nowrap; }
+
+/* ============================================================
+   COLOR
+   ============================================================ */
+.swatchgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.swatch { border: 1px solid hsl(var(--border)); border-radius: var(--radius); overflow: hidden; }
+.swatch__chip { height: 56px; border-bottom: 1px solid hsl(var(--border)); }
+.swatch__meta { padding: 8px 10px; background: hsl(var(--card)); }
+.swatch__name { font-size: 12px; font-weight: 500; }
+.swatch__val { font-family: var(--font-mono); font-size: 10.5px; color: hsl(var(--muted-foreground)); }
+
+.ramp { display: flex; border-radius: var(--radius); overflow: hidden; border: 1px solid hsl(var(--border)); }
+.ramp__step { flex: 1; height: 44px; position: relative; }
+.ramp__step span {
+  position: absolute; inset: auto 0 3px 0; text-align: center;
+  font-family: var(--font-mono); font-size: 9px; opacity: 0.75;
+}
+.rampline { display: grid; grid-template-columns: 92px minmax(0,1fr); gap: 12px; align-items: center; }
+.rampline__name { font-size: 12px; font-weight: 500; }
+.rampline__name em { display: block; font-style: normal; font-size: 11px; color: hsl(var(--muted-foreground)); }
+
+.accentbtns { display: flex; gap: 6px; }
+.accentbtn {
+  width: 22px; height: 22px; border-radius: 6px; padding: 0;
+  border: 1px solid hsl(0 0% 0% / 0.12);
+  cursor: pointer;
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+.accentbtn[aria-pressed="true"] {
+  box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--foreground) / 0.55);
+}
+.accentbtn:hover { transform: translateY(-1px); }
+
+.usage { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.usage__item { padding: 14px 16px; border-radius: var(--radius); border: 1px solid hsl(var(--border)); background: hsl(var(--card)); }
+.usage__tag { font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+.usage--do .usage__tag { color: hsl(var(--primary)); }
+.usage--dont .usage__tag { color: hsl(var(--destructive)); }
+.usage__item p { margin-top: 5px; color: hsl(var(--muted-foreground)); font-size: 13px; }
+.usage__item ul { margin-top: 8px; display: flex; flex-direction: column; gap: 5px; font-size: 13px; }
+.usage__item li { padding-left: 14px; position: relative; }
+.usage__item li::before {
+  content: ""; position: absolute; left: 0; top: 9px;
+  width: 5px; height: 1px; background: hsl(var(--border-strong));
+}
+
+.contrast { display: flex; align-items: center; gap: 10px; font-size: 12px; }
+.contrast__val { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-weight: 500; }
+
+/* ============================================================
+   TYPE SPECIMENS
+   ============================================================ */
+.specimen { display: grid; grid-template-columns: 150px minmax(0,1fr); gap: 20px; align-items: baseline; padding: 14px 0; border-bottom: 1px solid hsl(var(--border)); }
+.specimen:last-child { border-bottom: 0; }
+.specimen__meta { font-family: var(--font-mono); font-size: 11px; color: hsl(var(--muted-foreground)); line-height: 1.5; }
+.t-h1 { font-size: 24px; font-weight: 600; letter-spacing: -0.02em; }
+.t-h2 { font-size: 18px; font-weight: 600; letter-spacing: -0.015em; }
+.t-h3 { font-size: 14px; font-weight: 500; }
+.t-body { font-size: 14px; color: hsl(var(--muted-foreground)); }
+.t-meta { font-size: 12px; color: hsl(var(--muted-foreground)); }
+.t-label { font-size: 11px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: hsl(var(--muted-foreground)); }
+.jpsample { font-feature-settings: "palt" 1; }
+
+/* ============================================================
+   SPACING / RADIUS / SHADOW
+   ============================================================ */
+.spacebars { display: flex; flex-direction: column; gap: 8px; }
+.spacebar { display: grid; grid-template-columns: 76px 52px minmax(0,1fr); gap: 12px; align-items: center; font-size: 12px; }
+.spacebar__key { font-family: var(--font-mono); font-size: 11.5px; }
+.spacebar__px { font-family: var(--font-mono); font-size: 11.5px; color: hsl(var(--muted-foreground)); font-variant-numeric: tabular-nums; }
+.spacebar__fill { height: 12px; border-radius: 3px; background: hsl(var(--primary) / 0.22); border-left: 2px solid hsl(var(--primary)); }
+
+.radiusdemo { display: flex; gap: 12px; flex-wrap: wrap; }
+.radiusdemo__item { text-align: center; }
+.radiusdemo__box { width: 68px; height: 52px; border: 1px solid hsl(var(--border-strong)); background: hsl(var(--muted)); }
+.radiusdemo__lbl { margin-top: 6px; font-family: var(--font-mono); font-size: 10.5px; color: hsl(var(--muted-foreground)); }
+
+.shadowdemo { display: flex; gap: 16px; flex-wrap: wrap; }
+.shadowdemo__box {
+  width: 128px; height: 68px; border-radius: var(--radius);
+  background: hsl(var(--card)); border: 1px solid hsl(var(--border));
+  display: grid; place-items: center;
+  font-family: var(--font-mono); font-size: 10.5px; color: hsl(var(--muted-foreground));
+}
+
+/* ============================================================
+   COMPONENTS
+   ============================================================ */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  height: 36px; padding: 0 15px;
+  border-radius: calc(var(--radius) - 2px);
+  font-family: inherit; font-size: 13px; font-weight: 500;
+  border: 1px solid transparent; cursor: pointer; text-decoration: none;
+  transition: background-color .13s ease, border-color .13s ease, opacity .13s ease;
+  white-space: nowrap;
+}
+.btn--primary { background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); }
+.btn--primary:hover { background: hsl(var(--primary) / 0.9); }
+.btn--secondary { background: hsl(var(--secondary)); color: hsl(var(--secondary-foreground)); }
+.btn--secondary:hover { background: hsl(var(--secondary) / 0.7); }
+.btn--outline { border-color: hsl(var(--border-strong)); background: hsl(var(--card)); color: hsl(var(--foreground)); }
+.btn--outline:hover { background: hsl(var(--muted)); }
+.btn--ghost { background: transparent; color: hsl(var(--foreground)); }
+.btn--ghost:hover { background: hsl(var(--muted)); }
+.btn--link { background: transparent; color: hsl(var(--foreground)); text-decoration: underline; text-underline-offset: 3px; padding: 0; height: auto; }
+.btn--destructive { background: hsl(var(--destructive)); color: hsl(0 0% 100%); }
+.btn--sm { height: 30px; padding: 0 11px; font-size: 12px; }
+.btn--lg { height: 42px; padding: 0 20px; font-size: 14px; }
+.btn--icon { width: 36px; padding: 0; }
+.btn[disabled] { opacity: 0.5; cursor: not-allowed; }
+.btn svg { width: 14px; height: 14px; }
+
+.badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  height: 21px; padding: 0 8px;
+  border-radius: 999px;
+  font-size: 11px; font-weight: 500; letter-spacing: 0.01em;
+  background: hsl(var(--muted)); color: hsl(var(--muted-foreground));
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+.badge--outline { background: transparent; border-color: hsl(var(--border-strong)); color: hsl(var(--foreground)); }
+.badge--solid { background: hsl(var(--foreground)); color: hsl(var(--background)); }
+.badge--primary { background: hsl(var(--primary) / 0.12); color: hsl(var(--primary)); }
+.badge__dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field__label { font-size: 13px; font-weight: 500; }
+.field__hint { font-size: 12px; color: hsl(var(--muted-foreground)); }
+.input, .textarea {
+  width: 100%; font-family: inherit; font-size: 13px;
+  background: hsl(var(--card)); color: hsl(var(--foreground));
+  border: 1px solid hsl(var(--input));
+  border-radius: calc(var(--radius) - 2px);
+  padding: 8px 11px;
+  transition: border-color .13s ease, box-shadow .13s ease;
+}
+.input { height: 36px; }
+.textarea { min-height: 78px; resize: vertical; }
+.input::placeholder, .textarea::placeholder { color: hsl(var(--muted-foreground) / 0.75); }
+.input:focus, .textarea:focus {
+  outline: none;
+  border-color: hsl(var(--ring));
+  box-shadow: 0 0 0 3px hsl(var(--ring) / 0.16);
+}
+.input--error { border-color: hsl(var(--destructive)); }
+.errortext { font-size: 12px; color: hsl(var(--destructive)); }
+
+.tabs {
+  display: inline-flex; gap: 2px; padding: 3px;
+  background: hsl(var(--muted)); border-radius: calc(var(--radius) - 1px);
+  width: fit-content; align-self: flex-start; max-width: 100%; overflow-x: auto;
+}
+.tab {
+  border: 0; background: transparent; cursor: pointer;
+  font-family: inherit; font-size: 12.5px; font-weight: 500;
+  color: hsl(var(--muted-foreground));
+  padding: 5px 13px; border-radius: calc(var(--radius) - 3px);
+  transition: background-color .13s ease, color .13s ease;
+}
+.tab:hover { color: hsl(var(--foreground)); }
+.tab[aria-selected="true"] {
+  background: hsl(var(--card)); color: hsl(var(--foreground));
+  box-shadow: var(--shadow-sm);
+}
+
+.sep { height: 1px; background: hsl(var(--border)); border: 0; }
+
+.skel { background: hsl(var(--muted)); border-radius: 5px; position: relative; overflow: hidden; }
+.skel::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, hsl(var(--foreground) / 0.045), transparent);
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+@keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+
+/* ============================================================
+   APP PATTERNS
+   ============================================================ */
+.statcard { padding: 16px 18px; }
+.statcard__label { font-size: 11px; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; color: hsl(var(--muted-foreground)); }
+.statcard__value { font-size: 26px; font-weight: 600; letter-spacing: -0.025em; margin-top: 6px; font-variant-numeric: tabular-nums; }
+.statcard__sub { font-size: 12px; color: hsl(var(--muted-foreground)); margin-top: 2px; }
+
+.skillitem { padding: 16px 18px; }
+.skillitem__head { display: flex; align-items: center; gap: 8px; }
+.skillitem h4 { font-size: 14px; font-weight: 600; letter-spacing: -0.005em; }
+.skillitem p { margin-top: 6px; font-size: 13px; color: hsl(var(--muted-foreground)); }
+
+.workcard { display: grid; grid-template-columns: 108px minmax(0,1fr); overflow: hidden; }
+.workcard__thumb {
+  background: hsl(var(--muted));
+  border-right: 1px solid hsl(var(--border));
+  display: grid; place-items: center;
+  font-family: var(--font-mono); font-size: 10px;
+  color: hsl(var(--muted-foreground) / 0.8);
+  background-image: repeating-linear-gradient(45deg, hsl(var(--border) / 0.6) 0 1px, transparent 1px 7px);
+}
+.workcard__body { padding: 14px 16px; min-width: 0; }
+.workcard__title { font-size: 14px; font-weight: 600; letter-spacing: -0.005em; }
+.workcard__desc {
+  font-size: 12.5px; color: hsl(var(--muted-foreground)); margin-top: 4px;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.workcard__meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+
+.articlerow {
+  display: grid; grid-template-columns: 16px minmax(0,1fr) auto auto;
+  gap: 12px; align-items: center;
+  padding: 11px 14px;
+  border-bottom: 1px solid hsl(var(--border));
+  text-decoration: none;
+  transition: background-color .12s ease;
+}
+.articlerow:last-child { border-bottom: 0; }
+.articlerow:hover { background: hsl(var(--muted) / 0.6); }
+.articlerow__fav { width: 16px; height: 16px; border-radius: 4px; background: hsl(var(--border-strong)); }
+.articlerow__title { font-size: 13px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.articlerow__domain { font-family: var(--font-mono); font-size: 11px; color: hsl(var(--muted-foreground)); }
+.articlerow__date { font-family: var(--font-mono); font-size: 11px; color: hsl(var(--muted-foreground)); font-variant-numeric: tabular-nums; }
+
+.emptystate { padding: 40px 20px; text-align: center; }
+.emptystate__title { font-size: 13px; font-weight: 500; }
+.emptystate__desc { font-size: 12.5px; color: hsl(var(--muted-foreground)); margin-top: 4px; }
+
+.timeline { display: flex; flex-direction: column; }
+.timeline__item { display: grid; grid-template-columns: 88px 16px minmax(0,1fr); gap: 12px; padding-bottom: 20px; position: relative; }
+.timeline__item:last-child { padding-bottom: 0; }
+.timeline__year { font-family: var(--font-mono); font-size: 11.5px; color: hsl(var(--muted-foreground)); padding-top: 2px; font-variant-numeric: tabular-nums; }
+.timeline__rail { position: relative; display: flex; justify-content: center; }
+.timeline__rail::before { content: ""; position: absolute; top: 12px; bottom: -8px; width: 1px; background: hsl(var(--border)); }
+.timeline__item:last-child .timeline__rail::before { display: none; }
+.timeline__node { width: 7px; height: 7px; border-radius: 50%; background: hsl(var(--border-strong)); margin-top: 6px; z-index: 1; }
+.timeline__item--now .timeline__node { background: hsl(var(--primary)); box-shadow: 0 0 0 3px hsl(var(--primary) / 0.16); }
+.timeline__title { font-size: 13.5px; font-weight: 500; }
+.timeline__desc { font-size: 12.5px; color: hsl(var(--muted-foreground)); margin-top: 3px; }
+
+/* ============================================================
+   ARTICLES — toolbar / list / card / dialog
+   ============================================================ */
+.toolbar {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 10px 12px;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  background: hsl(var(--card));
+}
+.toolbar__spacer { margin-left: auto; }
+
+.toggroup {
+  display: inline-flex; padding: 2px; gap: 2px;
+  background: hsl(var(--muted)); border-radius: calc(var(--radius) - 2px);
+}
+.togbtn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  height: 26px; padding: 0 9px; border: 0; cursor: pointer;
+  background: transparent; color: hsl(var(--muted-foreground));
+  border-radius: calc(var(--radius) - 4px);
+  font-family: inherit; font-size: 12px; font-weight: 500;
+  transition: background-color .13s ease, color .13s ease;
+}
+.togbtn:hover { color: hsl(var(--foreground)); }
+.togbtn[aria-pressed="true"] { background: hsl(var(--card)); color: hsl(var(--foreground)); box-shadow: var(--shadow-sm); }
+
+.chiprow { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  height: 24px; padding: 0 10px; cursor: pointer;
+  border: 1px solid hsl(var(--border-strong));
+  background: transparent; color: hsl(var(--muted-foreground));
+  border-radius: 999px;
+  font-family: inherit; font-size: 12px; font-weight: 500;
+  transition: background-color .13s ease, color .13s ease, border-color .13s ease;
+}
+.chip:hover { color: hsl(var(--foreground)); background: hsl(var(--muted)); }
+.chip[aria-pressed="true"] {
+  background: hsl(var(--foreground)); color: hsl(var(--background));
+  border-color: hsl(var(--foreground));
+}
+.chip__count { font-variant-numeric: tabular-nums; opacity: .6; font-size: 11px; }
+.chip--star[aria-pressed="true"] { background: hsl(var(--primary)); border-color: hsl(var(--primary)); color: hsl(var(--primary-foreground)); }
+.chip--star[aria-pressed="true"] .ico { fill: currentColor; }
+
+/* list view */
+.alist { border: 1px solid hsl(var(--border)); border-radius: var(--radius); overflow: hidden; background: hsl(var(--card)); }
+.arow {
+  display: grid;
+  grid-template-columns: 18px 18px minmax(0, 1fr) auto auto;
+  gap: 12px; align-items: start;
+  padding: 12px 14px;
+  border-bottom: 1px solid hsl(var(--border));
+  cursor: pointer; text-align: left; width: 100%;
+  background: transparent; border-left: 0; border-right: 0; border-top: 0;
+  font-family: inherit; color: inherit;
+  transition: background-color .12s ease;
+}
+.arow:last-child { border-bottom: 0; }
+.arow:hover { background: hsl(var(--muted) / 0.55); }
+.arow__star { color: hsl(var(--border-strong)); padding-top: 2px; }
+.arow__star--on { color: hsl(var(--primary)); }
+.arow__star--on .ico { fill: currentColor; }
+.arow__fav { width: 18px; height: 18px; border-radius: 4px; background: hsl(var(--muted)); border: 1px solid hsl(var(--border)); margin-top: 1px; }
+.arow__main { min-width: 0; display: block; }
+.arow__title {
+  display: block;
+  font-size: 13.5px; font-weight: 500; letter-spacing: -0.005em; line-height: 1.5;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.arow__sum {
+  display: block;
+  font-size: 12.5px; color: hsl(var(--muted-foreground)); margin-top: 2px; line-height: 1.5;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.arow__tags { display: flex; gap: 5px; flex-wrap: wrap; justify-content: flex-end; max-width: 250px; padding-top: 2px; }
+.arow__side { display: block; text-align: right; padding-top: 2px; }
+.arow__domain { display: block; font-family: var(--font-mono); font-size: 11px; color: hsl(var(--muted-foreground)); }
+.arow__date { display: block; font-family: var(--font-mono); font-size: 11px; color: hsl(var(--muted-foreground)); font-variant-numeric: tabular-nums; margin-top: 2px; }
+
+/* card view */
+.agrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
+.acard {
+  display: flex; flex-direction: column; text-align: left; cursor: pointer;
+  background: hsl(var(--card)); color: inherit; font-family: inherit;
+  border: 1px solid hsl(var(--border)); border-radius: var(--radius);
+  overflow: hidden; padding: 0;
+  transition: border-color .13s ease, box-shadow .13s ease, transform .13s ease;
+}
+.acard:hover { border-color: hsl(var(--border-strong)); box-shadow: var(--shadow); transform: translateY(-1px); }
+.acard__thumb {
+  aspect-ratio: 16 / 9; position: relative;
+  border-bottom: 1px solid hsl(var(--border));
+  background: hsl(var(--muted));
+  display: grid; place-items: center; overflow: hidden;
+}
+.acard__thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.acard__ph { display: flex; flex-direction: column; align-items: center; gap: 5px; color: hsl(var(--muted-foreground) / 0.7); }
+.acard__ph-mark {
+  font-size: 20px; font-weight: 600; letter-spacing: -0.03em;
+  color: hsl(var(--muted-foreground) / 0.55);
+}
+.acard__ph-txt { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.04em; }
+.acard__star {
+  position: absolute; top: 7px; right: 7px;
+  width: 22px; height: 22px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: hsl(var(--background) / 0.9); color: hsl(var(--primary));
+  box-shadow: var(--shadow-sm);
+}
+.acard__star .ico { fill: currentColor; }
+.acard__body { padding: 11px 13px 12px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+.acard__title {
+  font-size: 13px; font-weight: 600; letter-spacing: -0.005em; line-height: 1.45;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.acard__sum {
+  font-size: 12px; color: hsl(var(--muted-foreground)); line-height: 1.55;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.acard__tags { display: flex; gap: 4px; flex-wrap: wrap; }
+.acard__foot {
+  margin-top: auto; padding-top: 8px;
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  font-family: var(--font-mono); font-size: 10.5px; color: hsl(var(--muted-foreground));
+  border-top: 1px solid hsl(var(--border));
+}
+.acard__foot span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.acard__foot .date { font-variant-numeric: tabular-nums; flex: none; }
+
+/* dialog */
+.dlg-backdrop {
+  position: fixed; inset: 0; z-index: 60;
+  background: hsl(240 10% 4% / 0.55);
+  display: grid; place-items: center; padding: 24px;
+  animation: fade .14s ease;
+}
+.dlg-backdrop[hidden] { display: none !important; }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+.dlg {
+  width: min(620px, 100%); max-height: min(82vh, 780px);
+  display: flex; flex-direction: column;
+  background: hsl(var(--card)); color: hsl(var(--card-foreground));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  box-shadow: 0 18px 45px -12px hsl(240 10% 4% / 0.35);
+  overflow: hidden;
+  animation: pop .16s cubic-bezier(.2,.8,.3,1);
+}
+@keyframes pop { from { opacity: 0; transform: translateY(6px) scale(.99); } to { opacity: 1; transform: none; } }
+.dlg__head { padding: 18px 20px 14px; border-bottom: 1px solid hsl(var(--border)); }
+.dlg__top { display: flex; align-items: center; gap: 8px; margin-bottom: 9px; }
+.dlg__close {
+  margin-left: auto; width: 28px; height: 28px; padding: 0;
+  display: grid; place-items: center;
+  border: 0; background: transparent; color: hsl(var(--muted-foreground));
+  border-radius: calc(var(--radius) - 3px); cursor: pointer;
+}
+.dlg__close:hover { background: hsl(var(--muted)); color: hsl(var(--foreground)); }
+.dlg__title { font-size: 16px; font-weight: 600; letter-spacing: -0.015em; line-height: 1.45; text-wrap: balance; }
+.dlg__url {
+  display: inline-flex; align-items: center; gap: 5px; margin-top: 7px;
+  font-family: var(--font-mono); font-size: 11.5px;
+  color: hsl(var(--muted-foreground)); text-decoration: none;
+}
+.dlg__url:hover { color: hsl(var(--foreground)); text-decoration: underline; text-underline-offset: 3px; }
+.dlg__props { padding: 14px 20px; border-bottom: 1px solid hsl(var(--border)); display: grid; gap: 9px; }
+.dlg__prop { display: grid; grid-template-columns: 92px minmax(0,1fr); gap: 12px; align-items: start; font-size: 12.5px; }
+.dlg__key { display: flex; align-items: center; gap: 6px; color: hsl(var(--muted-foreground)); }
+.dlg__val { min-width: 0; }
+.dlg__val--empty { color: hsl(var(--muted-foreground) / 0.6); }
+.dlg__body { padding: 18px 20px; overflow-y: auto; flex: 1; }
+.dlg__body h4 { font-size: 13.5px; font-weight: 600; margin-bottom: 7px; }
+.dlg__body p { font-size: 13px; color: hsl(var(--muted-foreground)); line-height: 1.75; }
+.dlg__body p + h4 { margin-top: 18px; }
+.dlg__img {
+  width: 100%; aspect-ratio: 16/9; max-height: 190px; border-radius: calc(var(--radius) - 2px);
+  border: 1px solid hsl(var(--border)); margin-bottom: 14px;
+  display: grid; place-items: center;
+  background: hsl(var(--muted));
+  font-family: var(--font-mono); font-size: 10.5px; color: hsl(var(--muted-foreground) / 0.8);
+}
+.dlg__foot {
+  padding: 13px 20px; border-top: 1px solid hsl(var(--border));
+  display: flex; gap: 8px; justify-content: flex-end;
+  background: hsl(var(--elevated));
+}
+
+/* ============================================================
+   SCREEN MOCK
+   ============================================================ */
+.mock { border: 1px solid hsl(var(--border)); border-radius: var(--radius); overflow: hidden; background: hsl(var(--background)); }
+.mock__chrome {
+  height: 32px; display: flex; align-items: center; gap: 6px; padding: 0 12px;
+  background: hsl(var(--elevated)); border-bottom: 1px solid hsl(var(--border));
+}
+.mock__dot { width: 8px; height: 8px; border-radius: 50%; background: hsl(var(--border-strong)); }
+.mock__url { margin-left: 8px; font-family: var(--font-mono); font-size: 10.5px; color: hsl(var(--muted-foreground)); }
+.mock__inner { display: grid; grid-template-columns: 148px minmax(0,1fr); min-height: 300px; }
+.mock__side { border-right: 1px solid hsl(var(--border)); background: hsl(var(--elevated)); padding: 10px; display: flex; flex-direction: column; gap: 2px; }
+.mock__nav {
+  font-size: 11.5px; padding: 5px 8px; border-radius: 5px;
+  color: hsl(var(--muted-foreground)); display: flex; align-items: center; gap: 7px;
+}
+.mock__nav--on { background: hsl(var(--muted)); color: hsl(var(--foreground)); font-weight: 500; }
+.mock__body { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.mock__title { font-size: 16px; font-weight: 600; letter-spacing: -0.015em; }
+.mock__sub { font-size: 12px; color: hsl(var(--muted-foreground)); margin-top: 2px; }
+
+/* ============================================================
+   RESOURCES
+   ============================================================ */
+.creed {
+  border: 1px solid hsl(var(--border));
+  border-left: 3px solid hsl(var(--primary));
+  border-radius: var(--radius);
+  background: hsl(var(--elevated));
+  padding: 18px 22px;
+  margin-bottom: 4px;
+}
+.creed__lead {
+  font-size: 19px; font-weight: 600; letter-spacing: -0.02em;
+  margin-bottom: 7px;
+}
+.creed p { font-size: 13px; color: hsl(var(--muted-foreground)); max-width: 66ch; line-height: 1.75; }
+
+.checklist { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 16px; counter-reset: none; }
+.checklist li { display: grid; grid-template-columns: 24px minmax(0,1fr); gap: 12px; align-items: start; }
+.checklist__n {
+  width: 22px; height: 22px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: hsl(var(--foreground)); color: hsl(var(--background));
+  font-family: var(--font-mono); font-size: 11px; font-weight: 500;
+  margin-top: 1px;
+}
+.checklist__q { font-size: 13.5px; font-weight: 500; }
+.checklist__a { font-size: 12.5px; color: hsl(var(--muted-foreground)); margin-top: 4px; line-height: 1.7; }
+
+.reject { display: grid; grid-template-columns: 22px minmax(0,1fr); gap: 12px; align-items: start; }
+.reject__ico { color: hsl(var(--destructive)); margin-top: 2px; }
+.reject__name { font-size: 13.5px; font-weight: 500; font-family: var(--font-mono); }
+.reject__why { font-size: 12.5px; color: hsl(var(--muted-foreground)); margin-top: 4px; line-height: 1.7; }
+
+/* ============================================================
+   CODE BLOCK
+   ============================================================ */
+.codeblock { position: relative; }
+.codeblock pre {
+  margin: 0; overflow-x: auto;
+  background: hsl(var(--elevated));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  font-family: var(--font-mono); font-size: 11.5px; line-height: 1.75;
+  color: hsl(var(--foreground) / 0.88);
+  tab-size: 2;
+}
+.codeblock__copy { position: absolute; top: 10px; right: 10px; }
+.codeblock .c { color: hsl(var(--muted-foreground)); }
+
+.note {
+  border-left: 2px solid hsl(var(--primary));
+  padding: 2px 0 2px 14px;
+  font-size: 13px; color: hsl(var(--muted-foreground));
+  max-width: 66ch;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 900px) {
+  .shell { grid-template-columns: 1fr; }
+  .sidebar { position: static; height: auto; border-right: 0; border-bottom: 1px solid hsl(var(--border)); }
+  .sidebar__nav { flex-direction: row; flex-wrap: wrap; }
+  .navlabel, .sidebar__foot { display: none; }
+  .specimen { grid-template-columns: 1fr; gap: 6px; }
+  .content { padding: 24px 16px 72px; }
+  .topbar { height: auto; padding: 10px 16px; }
+  .topbar__title { display: none; }
+  .topbar__tools { margin-left: 0; }
+  .workcard { grid-template-columns: 1fr; }
+  .workcard__thumb { height: 64px; border-right: 0; border-bottom: 1px solid hsl(var(--border)); }
+  .articlerow { grid-template-columns: 16px minmax(0,1fr); }
+  .articlerow__domain, .articlerow__date { display: none; }
+  .mock__inner { grid-template-columns: 1fr; }
+  .mock__side { flex-direction: row; overflow-x: auto; border-right: 0; border-bottom: 1px solid hsl(var(--border)); }
+  .arow { grid-template-columns: 18px 18px minmax(0,1fr); }
+  .arow__tags, .arow__side { display: none; }
+  .agrid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+  .dlg-backdrop { padding: 12px; }
+  .dlg__prop { grid-template-columns: 1fr; gap: 3px; }
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="i-dashboard" viewBox="0 0 24 24"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></symbol>
+  <symbol id="i-compass" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88"/></symbol>
+  <symbol id="i-palette" viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.93 0 1.65-.75 1.65-1.69 0-.44-.18-.83-.44-1.12a1.6 1.6 0 0 1-.44-1.13 1.64 1.64 0 0 1 1.67-1.67h2c3.05 0 5.55-2.5 5.55-5.55C22 6.01 17.46 2 12 2Z"/><circle cx="6.5" cy="12.5" r="1"/><circle cx="8.5" cy="7.5" r="1"/><circle cx="13.5" cy="6.5" r="1"/><circle cx="17.5" cy="10.5" r="1"/></symbol>
+  <symbol id="i-type" viewBox="0 0 24 24"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" x2="15" y1="20" y2="20"/><line x1="12" x2="12" y1="4" y2="20"/></symbol>
+  <symbol id="i-frame" viewBox="0 0 24 24"><line x1="22" x2="2" y1="6" y2="6"/><line x1="22" x2="2" y1="18" y2="18"/><line x1="6" x2="6" y1="2" y2="22"/><line x1="18" x2="18" y1="2" y2="22"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></symbol>
+  <symbol id="i-layers" viewBox="0 0 24 24"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/></symbol>
+  <symbol id="i-bookmark" viewBox="0 0 24 24"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></symbol>
+  <symbol id="i-monitor" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></symbol>
+  <symbol id="i-code" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+  <symbol id="i-briefcase" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="7" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+  <symbol id="i-external" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14 21 3"/></symbol>
+  <symbol id="i-image-off" viewBox="0 0 24 24"><line x1="2" x2="22" y1="2" y2="22"/><path d="M10.4 10.4a2 2 0 1 0 2.8 2.8"/><path d="M21 15.2V5a2 2 0 0 0-2-2H8.8"/><path d="M4.2 4.2A2 2 0 0 0 3 6v13a2 2 0 0 0 2 2h13a2 2 0 0 0 1.8-1.2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></symbol>
+  <symbol id="i-tag" viewBox="0 0 24 24"><path d="M12.6 2.6A2 2 0 0 0 11.2 2H4a2 2 0 0 0-2 2v7.2c0 .5.2 1 .6 1.4l8.8 8.8a2 2 0 0 0 2.8 0l7.2-7.2a2 2 0 0 0 0-2.8Z"/><circle cx="7.5" cy="7.5" r="1"/></symbol>
+  <symbol id="i-text" viewBox="0 0 24 24"><line x1="3" x2="21" y1="6" y2="6"/><line x1="3" x2="17" y1="12" y2="12"/><line x1="3" x2="13" y1="18" y2="18"/></symbol>
+  <symbol id="i-building" viewBox="0 0 24 24"><rect width="16" height="20" x="4" y="2" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01M16 6h.01M8 10h.01M16 10h.01M8 14h.01M16 14h.01"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
+  <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></symbol>
+  <symbol id="i-package" viewBox="0 0 24 24"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-ban" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/></symbol>
+  <symbol id="i-shapes" viewBox="0 0 24 24"><path d="M8.3 10a.7.7 0 0 1-.6-1l5.2-8a.7.7 0 0 1 1.2 0l5.2 8a.7.7 0 0 1-.6 1Z"/><rect x="3" y="14" width="7" height="7" rx="1"/><circle cx="17.5" cy="17.5" r="3.5"/></symbol>
+</svg>
+
+<div class="shell">
+  <!-- ======================= SIDEBAR ======================= -->
+  <aside class="sidebar">
+    <div class="sidebar__brand">
+      <div class="brand__mark">D</div>
+      <div class="brand__text">Design System</div>
+    </div>
+    <nav class="sidebar__nav" id="nav">
+      <div class="navlabel">Foundation</div>
+      <a class="navlink" href="#overview"><svg class="ico"><use href="#i-dashboard"/></svg>概要</a>
+      <a class="navlink" href="#principles"><svg class="ico"><use href="#i-compass"/></svg>デザイン原則</a>
+      <a class="navlink" href="#color"><svg class="ico"><use href="#i-palette"/></svg>カラー</a>
+      <a class="navlink" href="#type"><svg class="ico"><use href="#i-type"/></svg>タイポグラフィ</a>
+      <a class="navlink" href="#layout"><svg class="ico"><use href="#i-frame"/></svg>余白・角丸・影</a>
+      <div class="navlabel">Components</div>
+      <a class="navlink" href="#components"><svg class="ico"><use href="#i-grid"/></svg>基本コンポーネント</a>
+      <a class="navlink" href="#patterns"><svg class="ico"><use href="#i-layers"/></svg>画面パーツ</a>
+      <a class="navlink" href="#articles"><svg class="ico"><use href="#i-bookmark"/></svg>記事UI</a>
+      <a class="navlink" href="#screens"><svg class="ico"><use href="#i-monitor"/></svg>画面モック</a>
+      <div class="navlabel">Handoff</div>
+      <a class="navlink" href="#tokens"><svg class="ico"><use href="#i-code"/></svg>トークン出力</a>
+      <a class="navlink" href="#resources"><svg class="ico"><use href="#i-package"/></svg>リソース運用</a>
+    </nav>
+    <div class="sidebar__foot">v1 draft · 2026-08-30</div>
+  </aside>
+
+  <!-- ======================= MAIN ======================= -->
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar__title">スタイルガイド</div>
+      <div class="topbar__tools">
+        <div class="toolgroup">
+          <span class="toolgroup__label">Accent</span>
+          <div class="accentbtns" id="accents" role="group" aria-label="プライマリカラーを切り替え"></div>
+        </div>
+        <div class="toolgroup">
+          <span class="toolgroup__label">Radius</span>
+          <div class="tabs" id="radii" role="tablist" aria-label="角丸の大きさ">
+            <button class="tab" role="tab" data-r="0.25rem">S</button>
+            <button class="tab" role="tab" data-r="0.5rem" aria-selected="true">M</button>
+            <button class="tab" role="tab" data-r="0.75rem">L</button>
+          </div>
+        </div>
+        <button class="btn btn--outline btn--sm" id="themeBtn" aria-label="テーマを切り替え">
+          <span id="themeLabel">Dark</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="content">
+      <!-- ======================= OVERVIEW ======================= -->
+      <section id="overview" class="pagehead">
+        <h1><span style="display:inline-block">ポートフォリオ</span> <span style="display:inline-block">デザインシステム</span></h1>
+        <p>設計書 §2 の定義を実際の見た目で確認するためのスタイルガイド。このページ自体がサイトのアプリシェル（左サイドバー + 固定ヘッダー + 単一カラム）で組まれているので、読むこと自体が管理画面UIのプレビューになっている。</p>
+        <div class="row" style="margin-top:18px">
+          <span class="badge badge--outline">Next.js App Router</span>
+          <span class="badge badge--outline">Tailwind CSS v4</span>
+          <span class="badge badge--outline">shadcn/ui</span>
+          <span class="badge badge--outline">Inter + Noto Sans JP</span>
+        </div>
+        <p class="note" style="margin-top:20px">ヘッダーの <strong>Accent</strong> / <strong>Radius</strong> / <strong>Dark</strong> はこのページ全体に即反映される。決めた値はページ下部「トークン出力」に自動で反映されるので、そのまま <code>globals.css</code> に貼れる。</p>
+      </section>
+
+      <!-- ======================= PRINCIPLES ======================= -->
+      <section id="principles" class="section">
+        <div class="section__head"><span class="section__num">01</span><h2>デザイン原則</h2></div>
+        <p class="section__desc">迷ったときの判断基準。新しいUIを足すときは、まずこの3つに照らして考える。</p>
+        <div class="grid3">
+          <div class="card card--pad">
+            <div class="t-label">Calm &amp; Dense</div>
+            <p style="margin-top:8px;font-size:13px;color:hsl(var(--muted-foreground))">管理画面らしい情報密度を保つ。階層は装飾ではなく、整列・余白・タイポの差でつくる。</p>
+          </div>
+          <div class="card card--pad">
+            <div class="t-label">Monochrome first</div>
+            <p style="margin-top:8px;font-size:13px;color:hsl(var(--muted-foreground))">色は意味を持つときだけ使う。彩色するのはプライマリアクションのみで、それ以外はニュートラルの濃淡で表現する。</p>
+          </div>
+          <div class="card card--pad">
+            <div class="t-label">Motion is opt-in</div>
+            <p style="margin-top:8px;font-size:13px;color:hsl(var(--muted-foreground))">アニメーションは状態変化の理解を助けるときだけ。ページ遷移演出は付けない。</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================= COLOR ======================= -->
+      <section id="color" class="section">
+        <div class="section__head"><span class="section__num">02</span><h2>カラー</h2></div>
+        <p class="section__desc">ニュートラル1系統 + アクセント1色。shadcn/ui の CSS 変数規約に合わせ、すべて HSL のチャンネル値で保持する（<code>hsl(var(--primary))</code> で参照）。</p>
+
+        <h3>ニュートラルの選定</h3>
+        <div class="card card--pad stack">
+          <div class="rampline">
+            <div class="rampline__name">Zinc<em>採用</em></div>
+            <div class="ramp" id="ramp-zinc"></div>
+          </div>
+          <div class="rampline">
+            <div class="rampline__name">Slate<em>青みが強い</em></div>
+            <div class="ramp" id="ramp-slate"></div>
+          </div>
+          <div class="rampline">
+            <div class="rampline__name">Stone<em>暖色寄り</em></div>
+            <div class="ramp" id="ramp-stone"></div>
+          </div>
+          <p style="font-size:13px;color:hsl(var(--muted-foreground));margin-top:4px">純グレーは無機質に見えやすいので、わずかに寒色へ振った <strong>Zinc</strong> を採用。青系のアクセントと同じ色温度でまとまり、白背景でも紙のような濁りが出ない。暖色アクセント（オレンジ）を選ぶ場合は Stone に変えると調和する。</p>
+        </div>
+
+        <h3>セマンティックトークン</h3>
+        <div class="tablewrap">
+          <table>
+            <thead>
+              <tr><th style="width:52px"></th><th>トークン</th><th>用途</th><th class="mono">Light</th><th class="mono">Dark</th></tr>
+            </thead>
+            <tbody id="tokenTable"></tbody>
+          </table>
+        </div>
+
+        <h3>アクセントの候補</h3>
+        <div class="card card--pad stack">
+          <div class="swatchgrid" id="accentSwatches"></div>
+          <div class="row" style="gap:20px">
+            <div class="contrast">
+              <span style="color:hsl(var(--muted-foreground))">プライマリボタンの文字コントラスト</span>
+              <span class="contrast__val" id="contrastVal">—</span>
+              <span class="badge" id="contrastBadge">—</span>
+            </div>
+            <button class="btn btn--primary btn--sm">お問い合わせ</button>
+          </div>
+          <p style="font-size:12.5px;color:hsl(var(--muted-foreground))">ボタン上の文字は白（<code>--primary-foreground</code>）。WCAG AA の本文基準は 4.5:1、ボタンのような大きめ・太めの文字は 3:1 が下限。ダークテーマでは同じ色相のまま明度を上げた値を使う。</p>
+        </div>
+
+        <h3>使いどころのルール</h3>
+        <div class="usage">
+          <div class="usage__item usage--do">
+            <div class="usage__tag">Primary を使う</div>
+            <ul>
+              <li>各ページに1つだけの主アクション（お問い合わせ・送信）</li>
+              <li>現在地を示すナビのインジケータ</li>
+              <li>フォーカスリング</li>
+            </ul>
+          </div>
+          <div class="usage__item usage--dont">
+            <div class="usage__tag">Primary を使わない</div>
+            <ul>
+              <li>本文中のリンク（下線 + foreground で表現）</li>
+              <li>カテゴリバッジ・タグ（muted で表現）</li>
+              <li>見出しの装飾、アイコンの着色</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================= TYPOGRAPHY ======================= -->
+      <section id="type" class="section">
+        <div class="section__head"><span class="section__num">03</span><h2>タイポグラフィ</h2></div>
+        <p class="section__desc">欧文 Inter / 和文 Noto Sans JP / 数値・トークン JetBrains Mono。本文基準は管理画面に合わせて 14px。和文見出しには <code>font-feature-settings: "palt"</code> を効かせて字間を詰める。</p>
+
+        <div class="card card--pad">
+          <div class="specimen">
+            <div class="specimen__meta">h1 / Page title<br>24px · 600 · -0.02em</div>
+            <div class="t-h1 jpsample">実績とスキル、作れるもの。</div>
+          </div>
+          <div class="specimen">
+            <div class="specimen__meta">h2 / Section<br>18px · 600 · -0.015em</div>
+            <div class="t-h2 jpsample">ブックマークした記事</div>
+          </div>
+          <div class="specimen">
+            <div class="specimen__meta">h3 / Card title<br>14px · 500</div>
+            <div class="t-h3 jpsample">賃貸物件検索サービスのCVR改善</div>
+          </div>
+          <div class="specimen">
+            <div class="specimen__meta">body<br>14px · 400 · 1.65</div>
+            <div class="t-body jpsample" style="max-width:62ch">Figmaを用いた画面設計・プロトタイピング。HCDプロセスに基づき、ユーザー調査から情報設計・ビジュアルまで一貫して行える。The quick brown fox jumps over the lazy dog.</div>
+          </div>
+          <div class="specimen">
+            <div class="specimen__meta">meta<br>12px · 400</div>
+            <div class="t-meta">2026-08-30 · zenn.dev · Develop</div>
+          </div>
+          <div class="specimen">
+            <div class="specimen__meta">label<br>11px · 500 · 0.06em · uppercase</div>
+            <div class="t-label">Skills &amp; Capabilities</div>
+          </div>
+          <div class="specimen">
+            <div class="specimen__meta">mono / data<br>12px · tabular-nums</div>
+            <div style="font-family:var(--font-mono);font-variant-numeric:tabular-nums">--radius: 0.5rem · 1,240 · 09.28</div>
+          </div>
+        </div>
+
+        <p class="note" style="margin-top:16px">行長は本文で 62〜65 文字前後（<code>max-width: 62ch</code>）に収める。マーケサイト的な巨大ヒーロー見出しは作らない。</p>
+      </section>
+
+      <!-- ======================= LAYOUT ======================= -->
+      <section id="layout" class="section">
+        <div class="section__head"><span class="section__num">04</span><h2>余白・角丸・影</h2></div>
+        <p class="section__desc">4px グリッド（Tailwind デフォルト）。実際に使うのは下の7段階だけに絞り、それ以外の値は使わない。</p>
+
+        <div class="grid2">
+          <div class="card card--pad">
+            <div class="t-label" style="margin-bottom:14px">Spacing scale</div>
+            <div class="spacebars">
+              <div class="spacebar"><span class="spacebar__key">gap-1</span><span class="spacebar__px">4px</span><div class="spacebar__fill" style="width:4px"></div></div>
+              <div class="spacebar"><span class="spacebar__key">gap-2</span><span class="spacebar__px">8px</span><div class="spacebar__fill" style="width:8px"></div></div>
+              <div class="spacebar"><span class="spacebar__key">gap-3</span><span class="spacebar__px">12px</span><div class="spacebar__fill" style="width:12px"></div></div>
+              <div class="spacebar"><span class="spacebar__key">gap-4</span><span class="spacebar__px">16px</span><div class="spacebar__fill" style="width:16px"></div></div>
+              <div class="spacebar"><span class="spacebar__key">gap-6</span><span class="spacebar__px">24px</span><div class="spacebar__fill" style="width:24px"></div></div>
+              <div class="spacebar"><span class="spacebar__key">gap-8</span><span class="spacebar__px">32px</span><div class="spacebar__fill" style="width:32px"></div></div>
+              <div class="spacebar"><span class="spacebar__key">gap-12</span><span class="spacebar__px">48px</span><div class="spacebar__fill" style="width:48px"></div></div>
+            </div>
+            <p style="font-size:12.5px;color:hsl(var(--muted-foreground));margin-top:14px">カード内 padding は 16〜24px、セクション間は 24〜48px。兄弟要素の間隔は margin ではなく親の <code>gap</code> で作る。</p>
+          </div>
+
+          <div class="stack">
+            <div class="card card--pad">
+              <div class="t-label" style="margin-bottom:14px">Radius</div>
+              <div class="radiusdemo">
+                <div class="radiusdemo__item"><div class="radiusdemo__box" style="border-radius:calc(var(--radius) - 4px)"></div><div class="radiusdemo__lbl">-4px<br>バッジ内</div></div>
+                <div class="radiusdemo__item"><div class="radiusdemo__box" style="border-radius:calc(var(--radius) - 2px)"></div><div class="radiusdemo__lbl">-2px<br>ボタン・入力</div></div>
+                <div class="radiusdemo__item"><div class="radiusdemo__box" style="border-radius:var(--radius)"></div><div class="radiusdemo__lbl">base<br>カード</div></div>
+                <div class="radiusdemo__item"><div class="radiusdemo__box" style="border-radius:999px"></div><div class="radiusdemo__lbl">full<br>ピル</div></div>
+              </div>
+              <p style="font-size:12.5px;color:hsl(var(--muted-foreground));margin-top:14px">基準は <code>--radius</code> 1つ。他はそこからの相対値で導出するので、ヘッダーの Radius を変えると全体が連動する。</p>
+            </div>
+            <div class="card card--pad">
+              <div class="t-label" style="margin-bottom:14px">Elevation</div>
+              <div class="shadowdemo">
+                <div class="shadowdemo__box">none</div>
+                <div class="shadowdemo__box" style="box-shadow:var(--shadow-sm)">shadow-sm</div>
+                <div class="shadowdemo__box" style="box-shadow:var(--shadow)">shadow</div>
+              </div>
+              <p style="font-size:12.5px;color:hsl(var(--muted-foreground));margin-top:14px">通常のカードは境界線 + <code>shadow-sm</code> まで。<code>shadow</code> はポップオーバーやドロワーなど、面が浮くものだけ。</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================= COMPONENTS ======================= -->
+      <section id="components" class="section">
+        <div class="section__head"><span class="section__num">05</span><h2>基本コンポーネント</h2></div>
+        <p class="section__desc">shadcn/ui からコピーして使うもの。v1 で導入するのは button / card / badge / tabs / <strong>toggle-group</strong> / <strong>dialog</strong> / separator / sheet / input / textarea / label / skeleton / tooltip / scroll-area。</p>
+
+        <h3>Button</h3>
+        <div class="card card--pad stack">
+          <div class="row">
+            <button class="btn btn--primary">お問い合わせ</button>
+            <button class="btn btn--secondary">セカンダリ</button>
+            <button class="btn btn--outline">アウトライン</button>
+            <button class="btn btn--ghost">ゴースト</button>
+            <button class="btn btn--link">リンク</button>
+            <button class="btn btn--destructive">削除</button>
+          </div>
+          <hr class="sep">
+          <div class="row">
+            <button class="btn btn--primary btn--sm">Small</button>
+            <button class="btn btn--primary">Default</button>
+            <button class="btn btn--primary btn--lg">Large</button>
+            <button class="btn btn--outline btn--icon" aria-label="外部リンクを開く">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14 21 3"/></svg>
+            </button>
+            <button class="btn btn--primary" disabled>無効</button>
+          </div>
+          <hr class="sep">
+          <div class="row">
+            <button class="btn btn--primary">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+              送信する
+            </button>
+            <button class="btn btn--outline">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+              すべての実績を見る
+            </button>
+          </div>
+          <p style="font-size:12.5px;color:hsl(var(--muted-foreground))">1画面に <code>btn--primary</code> は原則1つ。並列の選択肢は outline、破壊的操作のみ destructive。</p>
+        </div>
+
+        <h3>Badge</h3>
+        <div class="card card--pad row">
+          <span class="badge">Design</span>
+          <span class="badge">Develop</span>
+          <span class="badge">Other</span>
+          <span class="badge badge--outline">Next.js</span>
+          <span class="badge badge--outline">TypeScript</span>
+          <span class="badge badge--solid">Webサービス</span>
+          <span class="badge badge--primary"><span class="badge__dot"></span>公開中</span>
+        </div>
+
+        <h3>Tabs · Input · Skeleton</h3>
+        <div class="grid2">
+          <div class="card card--pad stack">
+            <div class="tabs" role="tablist" aria-label="記事カテゴリ">
+              <button class="tab" role="tab" aria-selected="true">すべて</button>
+              <button class="tab" role="tab" aria-selected="false">Design</button>
+              <button class="tab" role="tab" aria-selected="false">Develop</button>
+              <button class="tab" role="tab" aria-selected="false">Other</button>
+            </div>
+            <hr class="sep">
+            <div class="stack" style="gap:10px">
+              <div class="skel" style="height:13px;width:38%"></div>
+              <div class="skel" style="height:13px;width:72%"></div>
+              <div class="skel" style="height:13px;width:56%"></div>
+            </div>
+          </div>
+          <div class="card card--pad stack">
+            <div class="field">
+              <label class="field__label" for="sg-name">お名前</label>
+              <input class="input" id="sg-name" type="text" placeholder="山田 太郎">
+            </div>
+            <div class="field">
+              <label class="field__label" for="sg-mail">メールアドレス</label>
+              <input class="input input--error" id="sg-mail" type="text" value="taro@" aria-describedby="sg-mail-err">
+              <span class="errortext" id="sg-mail-err">メールアドレスの形式で入力してください</span>
+            </div>
+            <div class="field">
+              <label class="field__label" for="sg-msg">お問い合わせ内容</label>
+              <textarea class="textarea" id="sg-msg" placeholder="ご相談内容をご記入ください"></textarea>
+              <span class="field__hint">通常2〜3営業日以内に返信します。</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================= PATTERNS ======================= -->
+      <section id="patterns" class="section">
+        <div class="section__head"><span class="section__num">06</span><h2>画面パーツ</h2></div>
+        <p class="section__desc">このサイト固有のコンポーネント。shadcn の流儀に合わせて <code>components/</code> 直下に置き、色は必ずトークン経由で参照する。</p>
+
+        <h3>StatCard — トップの数値サマリ</h3>
+        <div class="grid3">
+          <div class="card statcard">
+            <div class="statcard__label">業界歴</div>
+            <div class="statcard__value">10<span style="font-size:15px;font-weight:500;margin-left:3px">年+</span></div>
+            <div class="statcard__sub">デザイン / フロントエンド</div>
+          </div>
+          <div class="card statcard">
+            <div class="statcard__label">認定資格</div>
+            <div class="statcard__value" style="font-size:17px;line-height:1.5;letter-spacing:-0.01em">人間中心設計<br>スペシャリスト</div>
+            <div class="statcard__sub">HCD-Net 認定</div>
+          </div>
+          <div class="card statcard">
+            <div class="statcard__label">対応領域</div>
+            <div class="statcard__value" style="font-size:17px;line-height:1.5;letter-spacing:-0.01em">調査・設計から<br>実装・改善まで</div>
+            <div class="statcard__sub">一気通貫で担当できる</div>
+          </div>
+        </div>
+
+        <h3>SkillItem — 見出し + 説明文</h3>
+        <div class="grid2">
+          <div class="card skillitem">
+            <div class="skillitem__head"><h4>UIデザイン</h4></div>
+            <p>Figmaを用いた画面設計・プロトタイピング。HCDプロセスに基づき、ユーザー調査から情報設計・ビジュアルまで一貫して行える。</p>
+          </div>
+          <div class="card skillitem">
+            <div class="skillitem__head"><h4>フロントエンド開発</h4></div>
+            <p>Next.js / TypeScript / Tailwind CSS を中心に、デザインを損なわない実装まで自分で担当できる。アクセシビリティ・セマンティクスにも配慮。</p>
+          </div>
+          <div class="card skillitem">
+            <div class="skillitem__head"><h4>グロース・改善</h4></div>
+            <p>KPI設計、GA4を使った分析、CVR改善の企画から検証まで。作って終わりではなく、数値で改善を回せる。</p>
+          </div>
+          <div class="card skillitem">
+            <div class="skillitem__head"><h4>AI駆動開発</h4></div>
+            <p>Claude Code等を活用した開発フローの設計・運用。MCP連携やスキル整備を含め、チームで再現できる形にする。</p>
+          </div>
+        </div>
+
+        <h3>WorkCard — 実績一覧（サムネイル無しでも成立する形）</h3>
+        <div class="stack" style="gap:10px">
+          <div class="card workcard">
+            <div class="workcard__thumb">no image</div>
+            <div class="workcard__body">
+              <div class="workcard__title">賃貸物件検索サービスのCVR改善</div>
+              <div class="workcard__desc">検索条件UIと物件一覧の情報設計を見直し、GA4での行動分析をもとに問い合わせ導線を再構築。KPI設計から検証まで担当。</div>
+              <div class="workcard__meta">
+                <span class="badge badge--solid">Webサービス</span>
+                <span class="badge">Design</span>
+                <span class="badge">Development</span>
+                <span class="badge">PM</span>
+                <span class="badge badge--outline">2025</span>
+              </div>
+            </div>
+          </div>
+          <div class="card workcard">
+            <div class="workcard__thumb">thumb</div>
+            <div class="workcard__body">
+              <div class="workcard__title">modulesss.com</div>
+              <div class="workcard__desc">UIパーツ専用のギャラリーサイト。企画・デザイン・実装をすべて個人で担当。お気に入り機能とコードのエクスポートを実装。</div>
+              <div class="workcard__meta">
+                <span class="badge badge--solid">自主開発</span>
+                <span class="badge">Design</span>
+                <span class="badge">Development</span>
+                <span class="badge badge--primary"><span class="badge__dot"></span>公開中</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="note" style="margin-top:14px">実績は画像が用意できないものが多い前提。サムネイル枠はプレースホルダーでも成立するよう、タイトルと説明文で読ませる設計にしている。</p>
+
+        <h3>Timeline — 略歴</h3>
+        <div class="card card--pad">
+          <div class="timeline">
+            <div class="timeline__item timeline__item--now">
+              <div class="timeline__year">2025.01 –</div>
+              <div class="timeline__rail"><div class="timeline__node"></div></div>
+              <div>
+                <div class="timeline__title">NecScat — エンジニアリングチーム リーダー</div>
+                <div class="timeline__desc">デザイン・フロントエンド開発に加え、チームリードと PM / PdM 業務を担当。</div>
+              </div>
+            </div>
+            <div class="timeline__item">
+              <div class="timeline__year">独立</div>
+              <div class="timeline__rail"><div class="timeline__node"></div></div>
+              <div>
+                <div class="timeline__title">個人事業として受託</div>
+                <div class="timeline__desc">不動産業界を中心にデザイン・開発を担当。常駐案件を通じて売買・賃貸のドメイン知識を獲得。</div>
+              </div>
+            </div>
+            <div class="timeline__item">
+              <div class="timeline__year">前職</div>
+              <div class="timeline__rail"><div class="timeline__node"></div></div>
+              <div>
+                <div class="timeline__title">株式会社メンバーズ</div>
+                <div class="timeline__desc">Web制作・ディレクション。</div>
+              </div>
+            </div>
+            <div class="timeline__item">
+              <div class="timeline__year">卒業</div>
+              <div class="timeline__rail"><div class="timeline__node"></div></div>
+              <div>
+                <div class="timeline__title">東京デザイン専門学校</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================= ARTICLES ======================= -->
+      <section id="articles" class="section">
+        <div class="section__head"><span class="section__num">07</span><h2>記事UI</h2></div>
+        <p class="section__desc">Notion のブックマークDB（Design / Develop / Other の3つ）を表示する部分。リストとカードを切り替えられ、行やカードをクリックすると Notion ページ本文をモーダルで開く。</p>
+
+        <h3>データソースの構造</h3>
+        <div class="card card--pad stack">
+          <div class="tablewrap">
+            <table>
+              <thead><tr><th>Notion プロパティ</th><th>型</th><th>UIでの扱い</th></tr></thead>
+              <tbody>
+                <tr><td class="mono tight">タイトル</td><td class="mono tight">title</td><td>行・カードの見出し</td></tr>
+                <tr><td class="mono tight">URL</td><td class="mono tight">url</td><td>ドメイン表示 + 外部リンク先</td></tr>
+                <tr><td class="mono tight">概要</td><td class="mono tight">rich_text</td><td>説明文（リスト1行 / カード2行）</td></tr>
+                <tr><td class="mono tight">種別</td><td class="mono tight">select</td><td>バッジ。絞り込み対象</td></tr>
+                <tr><td class="mono tight">タグ</td><td class="mono tight">multi_select</td><td>チップ。絞り込み対象（DBごとに語彙が違う）</td></tr>
+                <tr><td class="mono tight">会社名</td><td class="mono tight">rich_text</td><td>モーダル内のみ。空が多い</td></tr>
+                <tr><td class="mono tight">☆</td><td class="mono tight">checkbox</td><td>おすすめ印。絞り込み対象</td></tr>
+                <tr><td class="mono tight">作成日時</td><td class="mono tight">created_time</td><td>並び順（新しい順）と日付表示</td></tr>
+                <tr><td class="mono tight">1番目のブロック</td><td class="mono tight">image block</td><td>カードのサムネイル</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p style="font-size:12.5px;color:hsl(var(--muted-foreground))">カテゴリ（design / develop / other）はプロパティではなく<strong>DBの分かれ方そのもの</strong>。3つのDB IDを環境変数で持ち、取得時にカテゴリを付与してマージする。タグの語彙はDBごとに異なるので、絞り込みチップは<strong>選択中カテゴリのタグだけ</strong>を出す。</p>
+        </div>
+
+        <h3>ツールバー — 絞り込みと表示切替</h3>
+        <div class="stack">
+          <div class="toolbar">
+            <div class="tabs" role="tablist" aria-label="カテゴリ" id="catTabs">
+              <button class="tab" role="tab" data-cat="all">すべて</button>
+              <button class="tab" role="tab" data-cat="design" aria-selected="true">Design</button>
+              <button class="tab" role="tab" data-cat="develop">Develop</button>
+              <button class="tab" role="tab" data-cat="other">Other</button>
+            </div>
+            <div class="toolbar__spacer"></div>
+            <button class="chip chip--star" id="starFilter" aria-pressed="false">
+              <svg class="ico ico--sm"><use href="#i-star"/></svg>☆のみ
+            </button>
+            <div class="toggroup" role="group" aria-label="表示形式">
+              <button class="togbtn" id="viewList" aria-pressed="true"><svg class="ico ico--sm"><use href="#i-list"/></svg>リスト</button>
+              <button class="togbtn" id="viewCard" aria-pressed="false"><svg class="ico ico--sm"><use href="#i-grid"/></svg>カード</button>
+            </div>
+          </div>
+          <div class="chiprow" id="tagRow"></div>
+        </div>
+
+        <h3 id="articleViewLabel">リスト表示 — 情報量を優先</h3>
+        <div id="articleView"></div>
+        <p class="note" style="margin-top:14px">リストが既定。1行に タイトル・概要・種別・タグ・ドメイン・日付 まで載るので、ストックを探すときはこちらが速い。カードはサムネイルで思い出したいときに切り替える。選択状態は <code>?view=card</code> としてURLに持たせ、リロードしても保たれるようにする。</p>
+
+        <h3>サムネイルの3状態</h3>
+        <div class="agrid" style="max-width:740px">
+          <div class="acard" style="cursor:default">
+            <div class="acard__thumb">
+              <div style="width:100%;height:100%;background:linear-gradient(135deg,hsl(258 60% 42%),hsl(280 55% 28%) 60%,hsl(240 30% 16%))"></div>
+            </div>
+            <div class="acard__body"><div class="acard__title">画像あり</div><div class="acard__sum">Notionページの1番目の画像ブロックを 16:9 でトリミング。</div></div>
+          </div>
+          <div class="acard" style="cursor:default">
+            <div class="acard__thumb">
+              <div class="acard__ph"><div class="acard__ph-mark">O</div><div class="acard__ph-txt">ORIGINKIT.DEV</div></div>
+            </div>
+            <div class="acard__body"><div class="acard__title">画像なし（フォールバック）</div><div class="acard__sum">ドメイン頭文字のレターマーク。欠けても一覧が崩れない。</div></div>
+          </div>
+          <div class="acard" style="cursor:default">
+            <div class="acard__thumb">
+              <div class="acard__ph"><svg class="ico ico--lg"><use href="#i-image-off"/></svg><div class="acard__ph-txt">LOAD FAILED</div></div>
+            </div>
+            <div class="acard__body"><div class="acard__title">読み込み失敗</div><div class="acard__sum">署名URLの失効など。<code>onError</code> でこの状態へ落とす。</div></div>
+          </div>
+        </div>
+        <p class="note" style="margin-top:14px">Notion のファイルURLは<strong>署名付きで約1時間で失効する</strong>ため、URLをそのまま HTML に埋めるとキャッシュされたページで画像が切れる。サムネイルは <code>/api/thumb/[pageId]</code> 経由で配信し、都度Notionから最新URLを引いて中継する。</p>
+
+        <h3>空状態</h3>
+        <div class="grid2">
+          <div class="card emptystate">
+            <div class="emptystate__title">条件に合う記事がありません</div>
+            <div class="emptystate__desc">タグの選択を減らすと結果が増えます。</div>
+            <div style="margin-top:14px"><button class="btn btn--outline btn--sm">絞り込みをリセット</button></div>
+          </div>
+          <div class="card emptystate">
+            <div class="emptystate__title">記事を読み込めませんでした</div>
+            <div class="emptystate__desc">時間をおいて再度お試しください。他のページは通常どおりご覧いただけます。</div>
+            <div style="margin-top:14px"><button class="btn btn--outline btn--sm">再読み込み</button></div>
+          </div>
+        </div>
+
+        <h3>Dialog — 記事の詳細</h3>
+        <div class="card card--pad stack">
+          <p style="font-size:13px;color:hsl(var(--muted-foreground))">Notion ページ本文に情報を書いているケース用。件数は少ないので、本文ブロックは<strong>モーダルを開いた時に初めて取得</strong>する（一覧生成時には取りに行かない）。</p>
+          <div class="row">
+            <button class="btn btn--primary btn--sm" id="openDlg">サンプルを開く</button>
+            <span style="font-size:12.5px;color:hsl(var(--muted-foreground))">Esc / 背景クリックで閉じる</span>
+          </div>
+        </div>
+        <p class="note" style="margin-top:14px">モーダルは Next.js の Parallel + Intercepting Routes で <code>/articles/[id]</code> に紐づける。一覧から開けばモーダル、URLを直接開けば単独ページになり、ブラウザバックで閉じられて共有もできる。</p>
+      </section>
+
+      <!-- ======================= SCREENS ======================= -->
+      <section id="screens" class="section">
+        <div class="section__head"><span class="section__num">08</span><h2>画面モック</h2></div>
+        <p class="section__desc">パーツを組み合わせた実際の画面。トップは非クリエイティブ職向け（作れるもの → 実績への導線）、実績一覧はクリエイティブ職向けの密度で。</p>
+
+        <h3>トップ /</h3>
+        <div class="mock">
+          <div class="mock__chrome">
+            <span class="mock__dot"></span><span class="mock__dot"></span><span class="mock__dot"></span>
+            <span class="mock__url">example.com/</span>
+          </div>
+          <div class="mock__inner">
+            <div class="mock__side">
+              <div class="mock__nav mock__nav--on"><svg class="ico"><use href="#i-dashboard"/></svg>Overview</div>
+              <div class="mock__nav"><svg class="ico"><use href="#i-user"/></svg>About</div>
+              <div class="mock__nav"><svg class="ico"><use href="#i-briefcase"/></svg>Works</div>
+              <div class="mock__nav"><svg class="ico"><use href="#i-bookmark"/></svg>Articles</div>
+              <div class="mock__nav"><svg class="ico"><use href="#i-mail"/></svg>Contact</div>
+            </div>
+            <div class="mock__body">
+              <div style="display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap">
+                <div style="flex:1;min-width:200px">
+                  <div class="mock__title">Daisuke</div>
+                  <div class="mock__sub">UIデザイナー / フロントエンドエンジニア</div>
+                </div>
+                <button class="btn btn--primary btn--sm">お問い合わせ</button>
+              </div>
+              <hr class="sep">
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px">
+                <div class="card" style="padding:10px 12px">
+                  <div style="font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:hsl(var(--muted-foreground))">業界歴</div>
+                  <div style="font-size:19px;font-weight:600;letter-spacing:-.02em;margin-top:2px">10年+</div>
+                </div>
+                <div class="card" style="padding:10px 12px">
+                  <div style="font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:hsl(var(--muted-foreground))">認定</div>
+                  <div style="font-size:12px;font-weight:600;margin-top:4px;line-height:1.4">HCD スペシャリスト</div>
+                </div>
+                <div class="card" style="padding:10px 12px">
+                  <div style="font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:hsl(var(--muted-foreground))">領域</div>
+                  <div style="font-size:12px;font-weight:600;margin-top:4px;line-height:1.4">設計 〜 実装</div>
+                </div>
+              </div>
+              <div>
+                <div style="font-size:12px;font-weight:600;margin-bottom:7px">作れるサイト</div>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px">
+                  <div class="card" style="padding:9px 11px"><div style="font-size:11.5px;font-weight:500">コーポレートサイト</div><div style="font-size:10.5px;color:hsl(var(--muted-foreground));margin-top:2px">信頼感が伝わるサイト</div></div>
+                  <div class="card" style="padding:9px 11px"><div style="font-size:11.5px;font-weight:500">Webサービス / 管理画面</div><div style="font-size:10.5px;color:hsl(var(--muted-foreground));margin-top:2px">使いやすさを設計したUI</div></div>
+                  <div class="card" style="padding:9px 11px"><div style="font-size:11.5px;font-weight:500">ECサイト</div><div style="font-size:10.5px;color:hsl(var(--muted-foreground));margin-top:2px">購入導線を最適化</div></div>
+                  <div class="card" style="padding:9px 11px"><div style="font-size:11.5px;font-weight:500">LP</div><div style="font-size:10.5px;color:hsl(var(--muted-foreground));margin-top:2px">申込みにつなげる1枚</div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h3>記事一覧 /articles</h3>
+        <div class="mock">
+          <div class="mock__chrome">
+            <span class="mock__dot"></span><span class="mock__dot"></span><span class="mock__dot"></span>
+            <span class="mock__url">example.com/articles</span>
+          </div>
+          <div class="mock__inner">
+            <div class="mock__side">
+              <div class="mock__nav"><svg class="ico"><use href="#i-dashboard"/></svg>Overview</div>
+              <div class="mock__nav"><svg class="ico"><use href="#i-user"/></svg>About</div>
+              <div class="mock__nav"><svg class="ico"><use href="#i-briefcase"/></svg>Works</div>
+              <div class="mock__nav mock__nav--on"><svg class="ico"><use href="#i-bookmark"/></svg>Articles</div>
+              <div class="mock__nav"><svg class="ico"><use href="#i-mail"/></svg>Contact</div>
+            </div>
+            <div class="mock__body">
+              <div>
+                <div class="mock__title">Articles</div>
+                <div class="mock__sub">日々ストックしている記事。Notion から自動で同期。</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                <div class="tabs" role="tablist" aria-label="カテゴリ（モック）">
+                  <button class="tab" role="tab" aria-selected="true">すべて</button>
+                  <button class="tab" role="tab" aria-selected="false">Design</button>
+                  <button class="tab" role="tab" aria-selected="false">Develop</button>
+                  <button class="tab" role="tab" aria-selected="false">Other</button>
+                </div>
+                <div class="toggroup" style="margin-left:auto" role="group" aria-label="表示形式（モック）">
+                  <button class="togbtn" aria-pressed="true"><svg class="ico ico--sm"><use href="#i-list"/></svg></button>
+                  <button class="togbtn" aria-pressed="false"><svg class="ico ico--sm"><use href="#i-grid"/></svg></button>
+                </div>
+              </div>
+              <div class="chiprow">
+                <button class="chip" style="height:21px;font-size:11px" aria-pressed="true">UI</button>
+                <button class="chip" style="height:21px;font-size:11px" aria-pressed="false">アニメーション</button>
+                <button class="chip" style="height:21px;font-size:11px" aria-pressed="false">AI</button>
+                <button class="chip" style="height:21px;font-size:11px" aria-pressed="false">配色</button>
+              </div>
+              <div class="alist">
+                <div class="arow" style="padding:9px 12px;grid-template-columns:16px 16px minmax(0,1fr) auto">
+                  <span class="arow__star arow__star--on"><svg class="ico ico--sm"><use href="#i-star"/></svg></span>
+                  <span class="arow__fav" style="width:16px;height:16px"></span>
+                  <span class="arow__main">
+                    <span class="arow__title" style="font-size:11.5px;display:block">Originkit — Free Animated component library</span>
+                    <span class="arow__sum" style="font-size:10.5px;display:block">MCP連携できる高品質なアニメーションギャラリー</span>
+                  </span>
+                  <span class="arow__side"><span class="arow__date" style="font-size:10px">08.23</span></span>
+                </div>
+                <div class="arow" style="padding:9px 12px;grid-template-columns:16px 16px minmax(0,1fr) auto">
+                  <span class="arow__star"><svg class="ico ico--sm"><use href="#i-star"/></svg></span>
+                  <span class="arow__fav" style="width:16px;height:16px"></span>
+                  <span class="arow__main">
+                    <span class="arow__title" style="font-size:11.5px;display:block">Refactoring UI Plugin</span>
+                    <span class="arow__sum" style="font-size:10.5px;display:block">Claude Code から使えるUIリファクタリング用プラグイン</span>
+                  </span>
+                  <span class="arow__side"><span class="arow__date" style="font-size:10px">08.21</span></span>
+                </div>
+                <div class="arow" style="padding:9px 12px;grid-template-columns:16px 16px minmax(0,1fr) auto">
+                  <span class="arow__star"><svg class="ico ico--sm"><use href="#i-star"/></svg></span>
+                  <span class="arow__fav" style="width:16px;height:16px"></span>
+                  <span class="arow__main">
+                    <span class="arow__title" style="font-size:11.5px;display:block">You don't need animations</span>
+                    <span class="arow__sum" style="font-size:10.5px;display:block">アニメーションを足す前に考えることの整理</span>
+                  </span>
+                  <span class="arow__side"><span class="arow__date" style="font-size:10px">08.14</span></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================= TOKENS ======================= -->
+      <section id="tokens" class="section">
+        <div class="section__head"><span class="section__num">09</span><h2>トークン出力</h2></div>
+        <p class="section__desc">上で選んだアクセントと角丸が反映された CSS。<code>src/styles/globals.css</code> にそのまま貼れる。</p>
+        <div class="codeblock">
+          <button class="btn btn--outline btn--sm codeblock__copy" id="copyBtn">コピー</button>
+          <pre id="cssOut"></pre>
+        </div>
+        <p class="note" style="margin-top:18px">実装時のルールは3つ。<strong>色は必ずトークン経由で参照する</strong>（コンポーネントに生の色値を書かない）。<strong>新しいUIはまず既存コンポーネントの組み合わせで検討する</strong>。<strong>shadcn の追加は <code>npx shadcn@latest add</code> で行う</strong>。この3行は <code>CLAUDE.md</code> にも書いておく。</p>
+      </section>
+
+      <!-- ======================= RESOURCES ======================= -->
+      <section id="resources" class="section">
+        <div class="section__head"><span class="section__num">10</span><h2>リソース運用</h2></div>
+        <p class="section__desc">参考にする外部リソースを、<strong>どう使うか</strong>で3つに分類する。全部をそのまま取り込むとトンマナが崩れるので、コードを持ち込んでよい範囲を先に決めておく。</p>
+
+        <div class="creed">
+          <div class="creed__lead">体験は借りる、トンマナは自前。</div>
+          <p>優れたコンポーネントを見つけたら、<strong>何が起きるか・どういう順序で起きるか</strong>だけを抜き出して、見た目は §2 のトークンで組み直す。デザインを丸ごとコピーしない。</p>
+        </div>
+
+        <h3>3つの区分</h3>
+        <div class="grid3">
+          <div class="card card--pad">
+            <div class="row" style="gap:8px;margin-bottom:9px">
+              <span class="badge badge--solid">A</span>
+              <span style="font-size:13px;font-weight:600">そのまま入れる</span>
+            </div>
+            <p style="font-size:12.5px;color:hsl(var(--muted-foreground))">shadcnと同じCSS変数を参照するもの。コピーした瞬間に自分のトークンに従うので、見た目が勝手に揃う。</p>
+          </div>
+          <div class="card card--pad">
+            <div class="row" style="gap:8px;margin-bottom:9px">
+              <span class="badge badge--outline">B</span>
+              <span style="font-size:13px;font-weight:600">体験だけ借りる</span>
+            </div>
+            <p style="font-size:12.5px;color:hsl(var(--muted-foreground))">挙動は優れているが、独自の色・モーション・基盤を持つもの。<strong>コードは持ち込まず</strong>、インタラクションだけ真似て自前で組む。</p>
+          </div>
+          <div class="card card--pad">
+            <div class="row" style="gap:8px;margin-bottom:9px">
+              <span class="badge">C</span>
+              <span style="font-size:13px;font-weight:600">判断基準として読ませる</span>
+            </div>
+            <p style="font-size:12.5px;color:hsl(var(--muted-foreground))">コードではなく観点を提供するもの。実装後のレビューでエージェントに渡す。常時コンテキストには載せない。</p>
+          </div>
+        </div>
+
+        <h3>リソース一覧</h3>
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th style="width:46px">区分</th><th>リソース</th><th>正体</th><th>使いどころ</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><span class="badge badge--solid">A</span></td>
+                <td class="mono tight">lucide-react</td>
+                <td>shadcn同梱のアイコンセット</td>
+                <td><strong>標準。</strong>アイコンは原則すべてここから</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge--solid">A</span></td>
+                <td class="mono tight">reui.io</td>
+                <td>shadcn互換のコンポーネント集（同じCSS変数を参照）</td>
+                <td>shadcn本体に無いものだけ取りに行く（Data Grid / Filters / Timeline / File Upload）</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge--outline">B</span></td>
+                <td class="mono tight">rareui.com</td>
+                <td>Motion製のアニメーションコンポーネント</td>
+                <td>Duration Picker / OTP Input のような<strong>入力体験の発明</strong>だけ読む。見た目は持ち込まない</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge--outline">B</span></td>
+                <td class="mono tight">coss.com/ui</td>
+                <td>Base UI ベースのコンポーネント集</td>
+                <td>Command Palette やドロワーの<strong>挙動の参考</strong>のみ。基盤が違うので混ぜない</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge--outline">B</span></td>
+                <td class="mono tight">lucide-animated.com</td>
+                <td>lucideと同じ字形のアニメーション版</td>
+                <td><strong>状態変化を伝えるときだけ</strong>（メニュー開閉・コピー完了・読込中）。装飾では使わない</td>
+              </tr>
+              <tr>
+                <td><span class="badge">C</span></td>
+                <td class="mono tight">refactoring-ui-plugin</td>
+                <td>Refactoring UI の原則をClaude Codeから使うプラグイン</td>
+                <td>各フェーズ完了時のUIレビューパスで実行</td>
+              </tr>
+              <tr>
+                <td><span class="badge">C</span></td>
+                <td class="mono tight">ui-skills.com</td>
+                <td>UI向けスキル集（CLI / MCP で agent に接続）</td>
+                <td>a11y・モーションの点検時に呼ぶ。フェーズ6で使用</td>
+              </tr>
+              <tr>
+                <td><span class="badge">C</span></td>
+                <td class="mono tight">designsystemchecklist.com</td>
+                <td>デザインシステムの網羅チェックリスト</td>
+                <td><strong>v1では Color / Typography / Layout / Core components の4項目だけ</strong>通す</td>
+              </tr>
+              <tr>
+                <td><span class="badge">C</span></td>
+                <td class="mono tight">emilkowal.ski</td>
+                <td>「You don't need animations」の記事</td>
+                <td>1回読んで §2 の Motion is opt-in に反映済み。都度参照は不要</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>持ち込み前の3つの確認</h3>
+        <div class="card card--pad">
+          <ol class="checklist">
+            <li>
+              <span class="checklist__n">1</span>
+              <div>
+                <div class="checklist__q">色は <code>hsl(var(--*))</code> で書かれているか？</div>
+                <div class="checklist__a">生の hex / oklch / Tailwind のカラークラス（<code>bg-blue-500</code> 等）が入っていたら、トークンに置き換えてから入れる。置き換えが大仕事ならコードを捨てて自前で組む。</div>
+              </div>
+            </li>
+            <li>
+              <span class="checklist__n">2</span>
+              <div>
+                <div class="checklist__q">独自の角丸・影・フォントを持ち込んでいないか？</div>
+                <div class="checklist__a">角丸は <code>--radius</code> からの相対値、影は <code>--shadow-sm</code> / <code>--shadow</code> の2段階だけ。ここが揃っていないと1コンポーネントだけ浮く。</div>
+              </div>
+            </li>
+            <li>
+              <span class="checklist__n">3</span>
+              <div>
+                <div class="checklist__q">依存パッケージが増えるか？</div>
+                <div class="checklist__a">増えるなら、その1コンポーネントのために入れる価値があるか考える。Motion を1箇所のために入れるのは割に合わないことが多い。</div>
+              </div>
+            </li>
+          </ol>
+        </div>
+
+        <h3>使わないもの</h3>
+        <div class="card card--pad stack" style="gap:12px">
+          <div class="reject">
+            <span class="reject__ico"><svg class="ico ico--sm"><use href="#i-ban"/></svg></span>
+            <div>
+              <div class="reject__name">reicon.dev</div>
+              <div class="reject__why">lucide と役割が完全に重複する。<strong>アイコンセットを2つ混ぜるのがトンマナ崩壊の最短ルート</strong>なので採用しない。lucide に欲しい形が無かったときの避難先としてだけ記憶しておく。</div>
+            </div>
+          </div>
+          <div class="reject">
+            <span class="reject__ico"><svg class="ico ico--sm"><use href="#i-ban"/></svg></span>
+            <div>
+              <div class="reject__name">rareui の装飾系コンポーネント</div>
+              <div class="reject__why">Fluid Orb / Gravity Letters のような見せ場コンポーネントは、白黒の管理画面トンマナと正面衝突する。「かっこいいから」で入ったモーションは §2 の Motion is opt-in 違反としてレビューで落とす。</div>
+            </div>
+          </div>
+        </div>
+
+        <p class="note" style="margin-top:18px">この表は <code>docs/resources.md</code> として切り出し、<code>CLAUDE.md</code> からリンクする。エージェントには<strong>常時読ませず</strong>、「参考実装を探すとき」「UIレビューのとき」に読ませる。全部を常時コンテキストに載せると、判断基準が多すぎて逆にブレる。</p>
+      </section>
+    </main>
+  </div>
+</div>
+
+<div class="dlg-backdrop" id="dlgBackdrop" hidden>
+  <div class="dlg" role="dialog" aria-modal="true" aria-labelledby="dlgTitle">
+    <div class="dlg__head">
+      <div class="dlg__top">
+        <span class="badge badge--solid" id="dlgKind">ギャラリー</span>
+        <span class="badge badge--primary"><span class="badge__dot"></span>おすすめ</span>
+        <button class="dlg__close" id="dlgClose" aria-label="閉じる"><svg class="ico"><use href="#i-x"/></svg></button>
+      </div>
+      <div class="dlg__title" id="dlgTitle">Originkit — Free Animated component library for modern websites</div>
+      <a class="dlg__url" href="#articles"><svg class="ico ico--sm"><use href="#i-link"/></svg>originkit.dev</a>
+    </div>
+    <div class="dlg__props">
+      <div class="dlg__prop">
+        <div class="dlg__key"><svg class="ico ico--sm"><use href="#i-text"/></svg>概要</div>
+        <div class="dlg__val">MCP連携できる高品質なアニメーションギャラリー</div>
+      </div>
+      <div class="dlg__prop">
+        <div class="dlg__key"><svg class="ico ico--sm"><use href="#i-tag"/></svg>タグ</div>
+        <div class="dlg__val"><span class="badge">AI</span> <span class="badge">アニメーション</span></div>
+      </div>
+      <div class="dlg__prop">
+        <div class="dlg__key"><svg class="ico ico--sm"><use href="#i-building"/></svg>会社名</div>
+        <div class="dlg__val dlg__val--empty">未設定</div>
+      </div>
+      <div class="dlg__prop">
+        <div class="dlg__key"><svg class="ico ico--sm"><use href="#i-clock"/></svg>作成日時</div>
+        <div class="dlg__val" style="font-family:var(--font-mono);font-size:12px">2026-08-23</div>
+      </div>
+    </div>
+    <div class="dlg__body">
+      <div class="dlg__img">1番目の画像ブロック</div>
+      <h4>メモ</h4>
+      <p>アニメーション付きコンポーネントが一通り揃っていて、コピペで動く状態で配布されている。MCP経由でエージェントから直接引ける点が他のギャラリーと違う。自分のサイトのモーション設計を決めるときの比較対象にする。</p>
+      <h4>使いどころ</h4>
+      <p>ホバーやページ内リビールなど、細かい動きの実装リファレンス。ただし入れすぎると管理画面のトンマナから外れるので、採用は主アクション周りに限定する。</p>
+    </div>
+    <div class="dlg__foot">
+      <button class="btn btn--outline btn--sm" id="dlgClose2">閉じる</button>
+      <a class="btn btn--primary btn--sm" href="#articles">
+        <svg class="ico ico--sm"><use href="#i-external"/></svg>サイトを開く
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- accents ---------- */
+  var ACCENTS = [
+    { id: "blue",   name: "Blue",   hex: "#2563EB", light: "221 83% 53%", dark: "217 91% 65%" },
+    { id: "teal",   name: "Teal",   hex: "#0F766E", light: "175 77% 26%", dark: "172 66% 45%" },
+    { id: "orange", name: "Orange", hex: "#EA580C", light: "21 90% 48%",  dark: "27 96% 58%"  },
+    { id: "violet", name: "Violet", hex: "#6D28D9", light: "263 70% 50%", dark: "258 90% 70%" }
+  ];
+  var current = ACCENTS[0];
+
+  var root = document.documentElement;
+  var accentsEl = document.getElementById("accents");
+  var swatchesEl = document.getElementById("accentSwatches");
+
+  function hslToRgb(h, s, l) {
+    s /= 100; l /= 100;
+    var k = function (n) { return (n + h / 30) % 12; };
+    var a = s * Math.min(l, 1 - l);
+    var f = function (n) { return l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1))); };
+    return [f(0), f(8), f(4)];
+  }
+  function lum(rgb) {
+    var c = rgb.map(function (v) { return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
+    return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+  }
+  function ratioVsWhite(triplet) {
+    var p = triplet.split(" ");
+    var rgb = hslToRgb(parseFloat(p[0]), parseFloat(p[1]), parseFloat(p[2]));
+    var L = lum(rgb);
+    return (1.05) / (L + 0.05);
+  }
+
+  function applyAccent(a) {
+    current = a;
+    root.style.setProperty("--accent-l", a.light);
+    root.style.setProperty("--accent-d", a.dark);
+    Array.prototype.forEach.call(accentsEl.children, function (b) {
+      b.setAttribute("aria-pressed", String(b.dataset.id === a.id));
+    });
+    var r = ratioVsWhite(a.light);
+    var val = document.getElementById("contrastVal");
+    var badge = document.getElementById("contrastBadge");
+    val.textContent = r.toFixed(2) + " : 1";
+    if (r >= 4.5) { badge.textContent = "AA 本文基準を満たす"; }
+    else if (r >= 3) { badge.textContent = "AA 大文字基準（ボタン可）"; }
+    else { badge.textContent = "コントラスト不足"; }
+    renderCss();
+  }
+
+  ACCENTS.forEach(function (a) {
+    var b = document.createElement("button");
+    b.className = "accentbtn";
+    b.dataset.id = a.id;
+    b.style.background = a.hex;
+    b.title = a.name + " " + a.hex;
+    b.setAttribute("aria-label", a.name);
+    b.setAttribute("aria-pressed", "false");
+    b.addEventListener("click", function () { applyAccent(a); });
+    accentsEl.appendChild(b);
+
+    var sw = document.createElement("div");
+    sw.className = "swatch";
+    sw.innerHTML =
+      '<div class="swatch__chip" style="background:' + a.hex + '"></div>' +
+      '<div class="swatch__meta"><div class="swatch__name">' + a.name + '</div>' +
+      '<div class="swatch__val">' + a.hex + " · " + a.light + "</div></div>";
+    sw.style.cursor = "pointer";
+    sw.addEventListener("click", function () { applyAccent(a); });
+    swatchesEl.appendChild(sw);
+  });
+
+  /* ---------- neutral ramps ---------- */
+  var RAMPS = {
+    zinc:  ["#FAFAFA","#F4F4F5","#E4E4E7","#D4D4D8","#A1A1AA","#71717A","#52525B","#3F3F46","#27272A","#18181B","#09090B"],
+    slate: ["#F8FAFC","#F1F5F9","#E2E8F0","#CBD5E1","#94A3B8","#64748B","#475569","#334155","#1E293B","#0F172A","#020617"],
+    stone: ["#FAFAF9","#F5F5F4","#E7E5E4","#D6D3D1","#A8A29E","#78716C","#57534E","#44403C","#292524","#1C1917","#0C0A09"]
+  };
+  var STEPS = [50,100,200,300,400,500,600,700,800,900,950];
+  Object.keys(RAMPS).forEach(function (key) {
+    var el = document.getElementById("ramp-" + key);
+    RAMPS[key].forEach(function (hex, i) {
+      var d = document.createElement("div");
+      d.className = "ramp__step";
+      d.style.background = hex;
+      d.title = key + "-" + STEPS[i] + " " + hex;
+      d.innerHTML = '<span style="color:' + (i >= 5 ? "#fff" : "#000") + '">' + STEPS[i] + "</span>";
+      el.appendChild(d);
+    });
+  });
+
+  /* ---------- token table ---------- */
+  var TOKENS = [
+    ["--background", "ページの地色", "0 0% 100%", "240 10% 3.9%"],
+    ["--foreground", "本文・見出しの文字", "240 10% 3.9%", "0 0% 98%"],
+    ["--card", "カードの面", "0 0% 100%", "240 7% 6.5%"],
+    ["--elevated", "サイドバー・コード面", "240 5% 98%", "240 6% 9%"],
+    ["--muted", "バッジ・タブの背景", "240 4.8% 95.9%", "240 4% 14%"],
+    ["--muted-foreground", "補足テキスト・ラベル", "240 3.8% 46.1%", "240 5% 64.9%"],
+    ["--border", "境界線・区切り", "240 5.9% 90%", "240 4% 17%"],
+    ["--border-strong", "入力欄の枠・強い境界", "240 5% 84%", "240 4% 24%"],
+    ["--primary", "主アクション（唯一の彩色）", "var(--accent-l)", "var(--accent-d)"],
+    ["--primary-foreground", "プライマリ上の文字", "0 0% 100%", "240 10% 6%"],
+    ["--destructive", "破壊的操作・エラー", "0 72% 45%", "0 72% 58%"]
+  ];
+  var tbody = document.getElementById("tokenTable");
+  TOKENS.forEach(function (t) {
+    var tr = document.createElement("tr");
+    var isVar = t[2].indexOf("var(") === 0;
+    var chipLight = isVar ? "hsl(var(--accent-l))" : "hsl(" + t[2] + ")";
+    var chipDark = isVar ? "hsl(var(--accent-d))" : "hsl(" + t[3] + ")";
+    tr.innerHTML =
+      '<td><span style="display:inline-flex;border:1px solid hsl(var(--border));border-radius:5px;overflow:hidden;vertical-align:middle">' +
+        '<span style="width:16px;height:20px;display:block;background:' + chipLight + '"></span>' +
+        '<span style="width:16px;height:20px;display:block;background:' + chipDark + '"></span>' +
+      "</span></td>" +
+      '<td class="mono tight">' + t[0] + "</td>" +
+      "<td>" + t[1] + "</td>" +
+      '<td class="mono tight">' + t[2] + "</td>" +
+      '<td class="mono tight">' + t[3] + "</td>";
+    tbody.appendChild(tr);
+  });
+
+  /* ---------- radius ---------- */
+  var radiusValue = "0.5rem";
+  var radii = document.getElementById("radii");
+  Array.prototype.forEach.call(radii.querySelectorAll(".tab"), function (t) {
+    t.addEventListener("click", function () {
+      Array.prototype.forEach.call(radii.querySelectorAll(".tab"), function (o) {
+        o.setAttribute("aria-selected", String(o === t));
+      });
+      radiusValue = t.dataset.r;
+      root.style.setProperty("--radius", radiusValue);
+      renderCss();
+    });
+  });
+
+  /* ---------- theme ---------- */
+  var themeBtn = document.getElementById("themeBtn");
+  var themeLabel = document.getElementById("themeLabel");
+  function isDarkNow() {
+    var stamp = root.getAttribute("data-theme");
+    if (stamp === "dark") return true;
+    if (stamp === "light") return false;
+    return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  }
+  function syncLabel() { themeLabel.textContent = isDarkNow() ? "Light" : "Dark"; }
+  themeBtn.addEventListener("click", function () {
+    root.setAttribute("data-theme", isDarkNow() ? "light" : "dark");
+    syncLabel();
+  });
+  syncLabel();
+  if (window.matchMedia) {
+    var mq = window.matchMedia("(prefers-color-scheme: dark)");
+    if (mq.addEventListener) mq.addEventListener("change", syncLabel);
+  }
+
+  /* ---------- css output ---------- */
+  var out = document.getElementById("cssOut");
+  function renderCss() {
+    var css =
+      "@layer base {\n" +
+      "  :root {\n" +
+      "    --background: 0 0% 100%;\n" +
+      "    --foreground: 240 10% 3.9%;\n" +
+      "    --card: 0 0% 100%;\n" +
+      "    --card-foreground: 240 10% 3.9%;\n" +
+      "    --muted: 240 4.8% 95.9%;\n" +
+      "    --muted-foreground: 240 3.8% 46.1%;\n" +
+      "    --border: 240 5.9% 90%;\n" +
+      "    --input: 240 5.9% 90%;\n" +
+      "    --ring: " + current.light + ";\n" +
+      "    --secondary: 240 4.8% 95.9%;\n" +
+      "    --secondary-foreground: 240 5.9% 10%;\n" +
+      "    --destructive: 0 72% 45%;\n" +
+      "    --destructive-foreground: 0 0% 98%;\n\n" +
+      "    /* " + current.name + " — 唯一の彩色。プライマリボタン専用 */\n" +
+      "    --primary: " + current.light + ";\n" +
+      "    --primary-foreground: 0 0% 100%;\n\n" +
+      "    --radius: " + radiusValue + ";\n" +
+      "  }\n\n" +
+      "  .dark {\n" +
+      "    --background: 240 10% 3.9%;\n" +
+      "    --foreground: 0 0% 98%;\n" +
+      "    --card: 240 7% 6.5%;\n" +
+      "    --card-foreground: 0 0% 98%;\n" +
+      "    --muted: 240 4% 14%;\n" +
+      "    --muted-foreground: 240 5% 64.9%;\n" +
+      "    --border: 240 4% 17%;\n" +
+      "    --input: 240 4% 17%;\n" +
+      "    --ring: " + current.dark + ";\n" +
+      "    --secondary: 240 4% 14%;\n" +
+      "    --secondary-foreground: 0 0% 98%;\n" +
+      "    --destructive: 0 72% 58%;\n" +
+      "    --destructive-foreground: 0 0% 98%;\n\n" +
+      "    --primary: " + current.dark + ";\n" +
+      "    --primary-foreground: 240 10% 6%;\n" +
+      "  }\n\n" +
+      "  body {\n" +
+      "    @apply bg-background text-foreground;\n" +
+      "    font-feature-settings: \"palt\" 1;\n" +
+      "  }\n" +
+      "}";
+    out.textContent = css;
+  }
+
+  var copyBtn = document.getElementById("copyBtn");
+  copyBtn.addEventListener("click", function () {
+    var done = function (ok) {
+      copyBtn.textContent = ok ? "コピーしました" : "コピーできません";
+      setTimeout(function () { copyBtn.textContent = "コピー"; }, 1800);
+    };
+    try {
+      navigator.clipboard.writeText(out.textContent).then(function () { done(true); }, function () { done(false); });
+    } catch (e) { done(false); }
+  });
+
+  /* ---------- articles ---------- */
+  var ARTICLES = [
+    { cat: "design", star: true, title: "Originkit — Free Animated component library for modern websites",
+      sum: "MCP連携できる高品質なアニメーションギャラリー", kind: "ギャラリー",
+      tags: ["AI", "アニメーション"], domain: "originkit.dev", date: "08.23",
+      thumb: "linear-gradient(135deg,hsl(258 60% 42%),hsl(280 55% 28%) 60%,hsl(240 30% 16%))" },
+    { cat: "design", star: false, title: "Design System Checklist",
+      sum: "デザインシステム構築時の網羅チェックリスト", kind: "ツール",
+      tags: ["デザインシステム", "UI"], domain: "designsystemchecklist.com", date: "08.09", thumb: null },
+    { cat: "design", star: true, title: "You don't need animations",
+      sum: "アニメーションを足す前に考えることの整理", kind: "記事",
+      tags: ["アニメーション", "UI"], domain: "emilkowal.ski", date: "08.14",
+      thumb: "linear-gradient(160deg,hsl(200 20% 22%),hsl(210 18% 12%))" },
+    { cat: "develop", star: false, title: "Refactoring UI Plugin",
+      sum: "Claude Code から使えるUIリファクタリング用プラグイン", kind: "ツール",
+      tags: ["AI", "Claude Code"], domain: "github.com", date: "08.21",
+      thumb: "linear-gradient(135deg,hsl(150 40% 30%),hsl(170 45% 16%))" },
+    { cat: "develop", star: false, title: "Notion API でデータベースを全件取得する",
+      sum: "ページネーションとレート制限の扱い方", kind: "記事",
+      tags: ["Next.js", "API"], domain: "developers.notion.com", date: "08.20", thumb: null }
+  ];
+  var TAGS = { design: ["UI", "アニメーション", "デザインシステム", "AI", "記事"], develop: ["Next.js", "API", "AI", "Claude Code"], other: ["ビジネス", "読み物"] };
+
+  var state = { cat: "design", view: "list", star: false, tags: [] };
+  var viewEl = document.getElementById("articleView");
+  var viewLabel = document.getElementById("articleViewLabel");
+  var tagRow = document.getElementById("tagRow");
+
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]; }); }
+  function starIcon(on) {
+    return '<span class="arow__star' + (on ? " arow__star--on" : "") + '"><svg class="ico ico--sm"><use href="#i-star"/></svg></span>';
+  }
+  function filtered() {
+    return ARTICLES.filter(function (a) {
+      if (state.cat !== "all" && a.cat !== state.cat) return false;
+      if (state.star && !a.star) return false;
+      if (state.tags.length && !state.tags.some(function (t) { return a.tags.indexOf(t) >= 0; })) return false;
+      return true;
+    });
+  }
+  function renderTags() {
+    if (state.cat === "all") {
+      tagRow.innerHTML = '<span style="font-size:12px;color:hsl(var(--muted-foreground))">カテゴリを選ぶとタグで絞り込めます（タグの語彙はDBごとに異なるため）</span>';
+      return;
+    }
+    tagRow.innerHTML = "";
+    (TAGS[state.cat] || []).forEach(function (t) {
+      var b = document.createElement("button");
+      b.className = "chip";
+      b.textContent = t;
+      b.setAttribute("aria-pressed", String(state.tags.indexOf(t) >= 0));
+      b.addEventListener("click", function () {
+        var i = state.tags.indexOf(t);
+        if (i >= 0) state.tags.splice(i, 1); else state.tags.push(t);
+        renderTags(); renderArticles();
+      });
+      tagRow.appendChild(b);
+    });
+  }
+  function renderArticles() {
+    var items = filtered();
+    viewLabel.textContent = state.view === "list" ? "リスト表示 — 情報量を優先" : "カード表示 — サムネイルで探す";
+    if (!items.length) {
+      viewEl.innerHTML = '<div class="card emptystate"><div class="emptystate__title">条件に合う記事がありません</div>' +
+        '<div class="emptystate__desc">タグの選択を減らすと結果が増えます。</div></div>';
+      return;
+    }
+    if (state.view === "list") {
+      viewEl.innerHTML = '<div class="alist">' + items.map(function (a) {
+        return '<button class="arow" data-open="1">' + starIcon(a.star) +
+          '<span class="arow__fav"></span>' +
+          '<span class="arow__main"><span class="arow__title">' + esc(a.title) + "</span>" +
+          '<span class="arow__sum">' + esc(a.sum) + "</span></span>" +
+          '<span class="arow__tags"><span class="badge badge--solid">' + esc(a.kind) + "</span>" +
+          a.tags.map(function (t) { return '<span class="badge">' + esc(t) + "</span>"; }).join("") + "</span>" +
+          '<span class="arow__side"><span class="arow__domain">' + esc(a.domain) + "</span>" +
+          '<span class="arow__date">' + a.date + "</span></span></button>";
+      }).join("") + "</div>";
+    } else {
+      viewEl.innerHTML = '<div class="agrid">' + items.map(function (a) {
+        var thumb = a.thumb
+          ? '<div style="width:100%;height:100%;background:' + a.thumb + '"></div>'
+          : '<div class="acard__ph"><div class="acard__ph-mark">' + esc(a.domain.charAt(0).toUpperCase()) +
+            '</div><div class="acard__ph-txt">' + esc(a.domain.toUpperCase()) + "</div></div>";
+        return '<button class="acard" data-open="1"><div class="acard__thumb">' + thumb +
+          (a.star ? '<span class="acard__star"><svg class="ico ico--sm"><use href="#i-star"/></svg></span>' : "") +
+          '</div><div class="acard__body">' +
+          '<div><span class="badge badge--solid">' + esc(a.kind) + "</span></div>" +
+          '<div class="acard__title">' + esc(a.title) + "</div>" +
+          '<div class="acard__sum">' + esc(a.sum) + "</div>" +
+          '<div class="acard__tags">' + a.tags.map(function (t) { return '<span class="badge">' + esc(t) + "</span>"; }).join("") + "</div>" +
+          '<div class="acard__foot"><span>' + esc(a.domain) + '</span><span class="date">' + a.date + "</span></div>" +
+          "</div></button>";
+      }).join("") + "</div>";
+    }
+    Array.prototype.forEach.call(viewEl.querySelectorAll("[data-open]"), function (el) {
+      el.addEventListener("click", openDlg);
+    });
+  }
+
+  var catTabs = document.getElementById("catTabs");
+  Array.prototype.forEach.call(catTabs.querySelectorAll(".tab"), function (t) {
+    t.addEventListener("click", function () {
+      Array.prototype.forEach.call(catTabs.querySelectorAll(".tab"), function (o) {
+        o.setAttribute("aria-selected", String(o === t));
+      });
+      state.cat = t.dataset.cat; state.tags = [];
+      renderTags(); renderArticles();
+    });
+  });
+  var starF = document.getElementById("starFilter");
+  starF.addEventListener("click", function () {
+    state.star = !state.star;
+    starF.setAttribute("aria-pressed", String(state.star));
+    renderArticles();
+  });
+  var vL = document.getElementById("viewList"), vC = document.getElementById("viewCard");
+  function setView(v) {
+    state.view = v;
+    vL.setAttribute("aria-pressed", String(v === "list"));
+    vC.setAttribute("aria-pressed", String(v === "card"));
+    renderArticles();
+  }
+  vL.addEventListener("click", function () { setView("list"); });
+  vC.addEventListener("click", function () { setView("card"); });
+
+  /* ---------- dialog ---------- */
+  var backdrop = document.getElementById("dlgBackdrop");
+  var lastFocus = null;
+  function openDlg() {
+    lastFocus = document.activeElement;
+    backdrop.hidden = false;
+    document.body.style.overflow = "hidden";
+    document.getElementById("dlgClose").focus();
+  }
+  function closeDlg() {
+    backdrop.hidden = true;
+    document.body.style.overflow = "";
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+  document.getElementById("openDlg").addEventListener("click", openDlg);
+  document.getElementById("dlgClose").addEventListener("click", closeDlg);
+  document.getElementById("dlgClose2").addEventListener("click", closeDlg);
+  backdrop.addEventListener("mousedown", function (e) { if (e.target === backdrop) closeDlg(); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !backdrop.hidden) closeDlg(); });
+
+  renderTags();
+  renderArticles();
+
+  /* ---------- scrollspy ---------- */
+  var links = Array.prototype.slice.call(document.querySelectorAll(".navlink"));
+  var sections = links.map(function (l) { return document.getElementById(l.getAttribute("href").slice(1)); });
+  if ("IntersectionObserver" in window) {
+    var visible = {};
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) { visible[e.target.id] = e.isIntersecting; });
+      var activeId = null;
+      for (var i = 0; i < sections.length; i++) {
+        if (sections[i] && visible[sections[i].id]) { activeId = sections[i].id; break; }
+      }
+      links.forEach(function (l) {
+        l.setAttribute("aria-current", String(l.getAttribute("href").slice(1) === activeId));
+      });
+    }, { rootMargin: "-64px 0px -60% 0px" });
+    sections.forEach(function (s) { if (s) io.observe(s); });
+  }
+
+  applyAccent(ACCENTS[0]);
+})();
+</script>
+
+</body>
+</html>
