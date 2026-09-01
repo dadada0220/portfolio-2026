@@ -10,7 +10,7 @@ import { z } from "zod";
 
 import { remarkWorkAssets } from "@/lib/markdown/remark-work-assets";
 import { remarkWorkBlocks } from "@/lib/markdown/remark-work-blocks";
-import { WORK_ROLES, WORK_TYPES } from "@/lib/profile";
+import { WORK_TYPES } from "@/lib/profile";
 
 /**
  * 実績は1件につき1ディレクトリ。本文は必ず `index.md`。
@@ -27,8 +27,10 @@ export const WORK_ENTRY_FILE = "index.md";
 const frontmatterSchema = z.object({
   title: z.string().min(1),
   slug: z.string().min(1),
+  // 種別だけは選択肢を固定する（一覧の絞り込みタブがこの値で作られるため）
   type: z.enum(WORK_TYPES),
-  roles: z.array(z.enum(WORK_ROLES)).min(1),
+  // roles / stack はマスタを持たない。md に書いた文字列をそのまま画面に出す
+  roles: z.array(z.string().min(1)).min(1),
   // YAML は `period: 2025` を数値として読むので、表示用の文字列に寄せる
   period: z.union([z.string(), z.number()]).transform(String).pipe(z.string().min(1)),
   stack: z.array(z.string()).default([]),

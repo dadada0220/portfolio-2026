@@ -195,7 +195,7 @@ shadcn/ui の CSS variables 規約に準拠（Tailwind v4 の `@theme` にマッ
 
 **Works `/works` / `/works/[slug]`**
 
-- 一覧: WorkCardグリッド。バッジで種別（Webサービス / コーポレート / EC / LP）と関与範囲（Design / Dev / PM）を表示。サムネイルは任意（無い場合はモノクロのプレースホルダーで成立するデザインにする — テキスト中心の実績が多い前提）
+- 一覧: WorkCardグリッド。バッジで種別（Webサイト制作 / Webサービス / その他）と領域を表示。サムネイルは任意（無い場合はモノクロのプレースホルダーで成立するデザインにする — テキスト中心の実績が多い前提）
 - 詳細: Markdownレンダリング。冒頭にWorkMeta（役割 / 期間 / スタック / 種別）、本文は「課題 → 取り組み → 成果」の型で書く
 
 **Bookmark `/articles`**（ナビ・見出しの表示名は "Bookmark"、URLは `/articles` のまま）
@@ -400,9 +400,11 @@ NOTION_DB_OTHER=
 ```md
 ---
 title: 賃貸物件検索サービスのCVR改善
-slug: rental-search-cvr        # ファイル名と一致させる
-type: web-service              # corporate | web-service | ec | lp | wordpress
-roles: [design, development, pm]
+slug: rental-search-cvr        # ディレクトリ名と一致させる
+# type の選択肢: website（Webサイト制作） / web-service（Webサービス） / other（その他）
+type: web-service
+# roles / stack は自由記述。ここに書いた文字列がそのまま画面に出る
+roles: [UIデザイン, フロントエンド開発]
 period: 2025                   # 表示用の自由文字列
 stack: [Next.js, TypeScript, GA4]
 summary: 検索・一覧UIの改善とGA4での効果検証。   # 一覧カードの説明文（実装で追加）
@@ -429,6 +431,11 @@ content/works/<slug>/
 ├── index.md          # 本文（frontmatter + Markdown）
 └── figma-01.png      # 素材。本文からは ![](figma-01.png) と相対パスで参照する
 ```
+
+**マスタを持つのは `type` だけ。** 一覧（`/works`）の絞り込みタブがこの値から作られるので、
+表記ゆれがあるとタブが増えてしまうため、`src/lib/profile.ts` の `WORK_TYPES` に固定している
+（`website` / `web-service` / `other`）。`roles` と `stack` はマスタを持たず、
+md に書いた文字列をそのまま画面に出す。
 
 `lib/works.ts` でパース・型付け（frontmatterはzodでバリデーション）。
 `period` は YAML が `2025` を数値として読むため、実装側で文字列に寄せている。

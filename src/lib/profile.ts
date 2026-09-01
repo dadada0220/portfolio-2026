@@ -8,34 +8,21 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-/** 実績の種別。`content/works/*.md` の frontmatter `type` と対応する。 */
-export const WORK_TYPES = [
-  "corporate",
-  "web-service",
-  "ec",
-  "lp",
-  "wordpress",
-] as const;
+/**
+ * 実績の種別。`content/works/<slug>/index.md` の frontmatter `type` と対応する。
+ *
+ * **ここだけは選択肢を固定する。** 一覧（`/works`）の絞り込みタブが
+ * この一覧から作られるので、表記ゆれがあるとタブが増えてしまうため。
+ * `roles` や `stack` はマスタを持たず、md に書いた文字列をそのまま出す。
+ */
+export const WORK_TYPES = ["website", "web-service", "other"] as const;
 
 export type WorkType = (typeof WORK_TYPES)[number];
 
 export const WORK_TYPE_LABELS: Record<WorkType, string> = {
-  corporate: "コーポレートサイト",
+  website: "Webサイト制作",
   "web-service": "Webサービス",
-  ec: "ECサイト",
-  lp: "LP",
-  wordpress: "WordPressサイト",
-};
-
-/** 実績での関与範囲。 */
-export const WORK_ROLES = ["design", "development", "pm"] as const;
-
-export type WorkRole = (typeof WORK_ROLES)[number];
-
-export const WORK_ROLE_LABELS: Record<WorkRole, string> = {
-  design: "Design",
-  development: "Dev",
-  pm: "PM",
+  other: "その他",
 };
 
 /**
@@ -139,11 +126,11 @@ export const timeline: {
  */
 export const intro = {
   headline: "デザインから運用まで、",
-  headlineMuted: "プロダクトを一気通貫で推進",
+  headlineMuted: "プロダクト開発を一気通貫で推進",
   body: [
     // "UIデザインとフロントエンド開発を軸に、Webサイトとサービスの制作を行う個人事務所です。",
     // "近年はサービスの課題・施策検討、定量データ分析、Claude Codeを用いたサービス運用などの領域も対応しています。",
     "UIデザインとフロントエンド開発を軸に、新卒から約10年間Web業界に従事。",
-    "近年は、プロダクトの課題・施策検討、定量データの分析、Claude Codeを用いたプロダクト運用など、幅広い領域に携わっています。",
+    "近年は、プロダクトの課題整理や施策検討、定量データの分析、Claude Codeを用いたプロダクト運用など、幅広い領域に携わっています。",
   ],
 };

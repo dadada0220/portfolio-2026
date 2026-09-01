@@ -2,19 +2,15 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
-import {
-  WORK_ROLE_LABELS,
-  WORK_TYPE_LABELS,
-  type WorkRole,
-  type WorkType,
-} from "@/lib/profile";
+import { WORK_TYPE_LABELS, type WorkType } from "@/lib/profile";
 
 export type WorkCardProps = {
   slug: string;
   title: string;
   summary: string;
   type: WorkType;
-  roles: WorkRole[];
+  /** md にそのまま書いた文字列。コード側にマスタは持たない */
+  roles: string[];
   period: string;
 };
 
@@ -36,7 +32,7 @@ export function WorkCard({
           <Badge variant="secondary">{WORK_TYPE_LABELS[type]}</Badge>
           {roles.map((role) => (
             <Badge key={role} variant="outline">
-              {WORK_ROLE_LABELS[role]}
+              {role}
             </Badge>
           ))}
         </div>

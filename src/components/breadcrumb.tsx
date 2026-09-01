@@ -29,19 +29,19 @@ export function Breadcrumb({ current }: { current?: ReactNode }) {
 
   return (
     <nav aria-label="パンくずリスト">
-      <ol className="flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground">
+      <ol className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
         <li className="flex items-center">
           <Link
             href="/"
             aria-label="ホーム"
             className="rounded-md p-0.5 transition-colors outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
           >
-            <House className="size-[15px]" />
+            <House className="size-[13px]" />
           </Link>
         </li>
         {items.map((item, index) => (
-          <li key={index} className="flex min-w-0 items-center gap-1.5">
-            <ChevronRight aria-hidden className="size-3.5 shrink-0 opacity-60" />
+          <li key={index} className="flex min-w-0 items-center gap-1">
+            <ChevronRight aria-hidden className="size-3 shrink-0 opacity-60" />
             {item.href ? (
               <Link
                 href={item.href}

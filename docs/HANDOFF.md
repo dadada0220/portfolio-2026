@@ -201,7 +201,7 @@ frontmatterは design-doc.md §5.2 を参照。本文は「課題 → 取り組�
 | サイドバーの Links をヘッダーへ | GitHub / Zenn をアイコンのみでダークモードボタンの左に配置。サイドバーの Links セクションは削除 |
 | パンくずをコンテンツへ | `PageHeader` が先頭に描画する。ヘッダーからは削除 |
 | 戻るボタンを削除し、パンくずで戻る | `PageHeader` の `backHref` を廃止。詳細ページでは**パンくずの親（Works）をリンクにして戻る導線を兼ねる** |
-| 実績詳細の期間を削除 | `WorkMeta` を 種別 / 関与範囲 / スタック の3項目に（`period` は一覧カードには残る） |
+| 実績詳細の期間を削除 | `WorkMeta` を 種別 / 領域 / スタック の3項目に（`period` は一覧カードには残る） |
 | md内のテーブルをスタイリング | `.prose-work` に table / thead / th / td を追加。幅が足りないときだけ横スクロール |
 | h2 の下線は不要 | `border-b pb-2` を削除し `font-bold` に |
 | 箇条書きの丸をアクセントカラーに | `.prose-work ul > li::marker` と、スキルカードの丸を `--primary` に |

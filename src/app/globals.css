@@ -258,8 +258,10 @@
   .prose-work {
     @apply flex flex-col gap-4 text-sm leading-relaxed text-foreground;
   }
+  /* h2 の上だけ節の切れ目として広く取る。
+     本文の gap(16px) + mt-12(48px) = 64px */
   .prose-work > * + h2 {
-    @apply mt-4;
+    @apply mt-12;
   }
   /* 見出しは 20 / 16 / 14px。h2 は design-system のセクション見出しに揃える */
   .prose-work h2 {
@@ -351,6 +353,16 @@
   /* 画像の縦横比が揃っていなくても見出しの位置が揃うよう、カラム内だけ比率を固定する */
   .prose-work [data-block="col"] img {
     @apply aspect-4/3 w-full object-cover;
+  }
+  /*
+   * 画像と見出しの間だけ 8px → 24px（3倍）に開けて、図版とテキストの塊を切り離す。
+   * 見出しと本文の間は 8px のままにしたいが、Markdown が吐くのは
+   * 画像・見出し・本文が平坦に並んだ兄弟なので、入れ子にして gap を2つ持てない。
+   * gap(8px) + mt-4(16px) = 24px として、ここだけ margin で足している
+   * （兄弟の間隔は親の gap で作る、というプロジェクト規約の例外）。
+   */
+  .prose-work [data-block="col"] > p:has(> img) + h3 {
+    @apply mt-4;
   }
 }
 

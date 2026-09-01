@@ -118,8 +118,9 @@ export function AppShell({ children }: { children: ReactNode }) {
             aria-hidden
             className="bg-glow pointer-events-none absolute inset-x-0 top-0 h-[420px]"
           />
+          {/* 下は 120px 固定。読み終わりに余白を残して、ページの終わりを分からせる */}
           <div
-            className={`relative flex w-full flex-col gap-12 py-8 sm:py-10 ${GUTTER}`}
+            className={`relative flex w-full flex-col gap-12 pt-8 pb-30 sm:pt-10 ${GUTTER}`}
           >
             {children}
           </div>
