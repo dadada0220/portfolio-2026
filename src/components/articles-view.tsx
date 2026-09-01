@@ -48,7 +48,8 @@ function parseState(search: string): ViewState {
   const cat = params.get("cat");
   return {
     category: ARTICLE_CATEGORIES.find((c) => c === cat) ?? "all",
-    view: params.get("view") === "card" ? "card" : "list",
+    // 既定はカード表示。リストのときだけURLに残す
+    view: params.get("view") === "list" ? "list" : "card",
     starred: params.get("star") === "1",
     tags: (params.get("tags") ?? "").split(",").filter(Boolean),
     article: params.get("article"),
@@ -58,7 +59,7 @@ function parseState(search: string): ViewState {
 function toQuery(state: ViewState): string {
   const params = new URLSearchParams();
   if (state.category !== "all") params.set("cat", state.category);
-  if (state.view !== "list") params.set("view", state.view);
+  if (state.view !== "card") params.set("view", state.view);
   if (state.starred) params.set("star", "1");
   if (state.tags.length > 0) params.set("tags", state.tags.join(","));
   if (state.article) params.set("article", state.article);
@@ -104,7 +105,7 @@ function useUrlState(): ViewState {
 
 function ListSkeleton({ rows = 8 }: { rows?: number }) {
   return (
-    <ul className="overflow-hidden rounded-lg border bg-card">
+    <ul className="surface-card overflow-hidden">
       {Array.from({ length: rows }).map((_, index) => (
         <li
           key={index}
@@ -300,7 +301,7 @@ export function ArticlesView({
       ) : visible.length === 0 ? (
         <EmptyState
           title="条件に合う記事がありません"
-          description="タグやお気に入りの絞り込みを外すと表示されます。"
+          description="タグやおすすめの絞り込みを外すと表示されます。"
           action={
             <Button
               variant="outline"
@@ -320,7 +321,7 @@ export function ArticlesView({
           ))}
         </ul>
       ) : (
-        <ul className="overflow-hidden rounded-lg border bg-card">
+        <ul className="surface-card overflow-hidden">
           {shown.map((article) => (
             <ArticleRow
               key={article.id}

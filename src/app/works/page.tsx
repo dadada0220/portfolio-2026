@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 
 import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
+import { ViewAllLink } from "@/components/view-all-link";
 import { WorkCard } from "@/components/work-card";
 import { WorkTypeFilter } from "@/components/work-type-filter";
-import { Button } from "@/components/ui/button";
 import { WORK_TYPES, WORK_TYPE_LABELS, type WorkType } from "@/lib/profile";
 import { getWorks } from "@/lib/works";
 
@@ -37,9 +36,8 @@ export default async function WorksPage({
   return (
     <>
       <PageHeader
-        eyebrow="Works"
         title="実績"
-        description="公開できるものは実名で、クライアントワークは案件名をぼかして掲載しています。各ページは「課題 → 取り組み → 成果」の順に書いています。"
+        description="これまでに携わった案件や成果物を掲載しています。"
       />
 
       <section className="flex flex-col gap-4">
@@ -49,11 +47,7 @@ export default async function WorksPage({
           <EmptyState
             title={`「${activeType ? WORK_TYPE_LABELS[activeType] : ""}」の実績はまだありません`}
             description="他の種別の実績をご覧ください。"
-            action={
-              <Button asChild variant="outline" size="sm">
-                <Link href="/works">すべての実績を見る</Link>
-              </Button>
-            }
+            action={<ViewAllLink href="/works" />}
           />
         ) : (
           <div className="grid gap-3 sm:grid-cols-2">

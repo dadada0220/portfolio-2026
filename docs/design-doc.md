@@ -195,8 +195,15 @@ shadcn/ui の CSS variables 規約に準拠（Tailwind v4 の `@theme` にマッ
 
 **Works `/works` / `/works/[slug]`**
 
-- 一覧: WorkCardグリッド。バッジで種別（Webサイト制作 / Webサービス / その他）と領域を表示。サムネイルは任意（無い場合はモノクロのプレースホルダーで成立するデザインにする — テキスト中心の実績が多い前提）
-- 詳細: Markdownレンダリング。冒頭にWorkMeta（役割 / 期間 / スタック / 種別）、本文は「課題 → 取り組み → 成果」の型で書く
+- 一覧: WorkCardグリッド。**出す情報はサムネイル・タイトル・概要の3つだけ**。種別や領域のバッジ、期間、遷移アイコンは置かない
+  （一覧は「どれを開くか」を選ぶ場所で、属性は詳細ページに任せる）。**サムネイルは任意**で、無いカードは画像なしで成立する。
+  ホバーではカードがわずかに浮き、画像だけがゆっくり寄る。**文字は動かさない**（読んでいる途中で行が逃げないように）
+- 詳細: メインコンテンツの最上部に `WorkHero`。サムネイルを全幅で敷き、その上にパンくずとタイトルを置く。
+  続いてWorkMeta（種別 / 領域 / スタック）、本文は「課題 → 取り組み → 成果」の型で書く。
+  サムネイルが無い実績では通常の `PageHeader` に戻す
+- 一覧へ送る導線は `ViewAllLink`。枠線も塗りも持たない素のリンクで、ラベルは `View All`
+- サムネイルは全件が抽象的なグラデーションなので、縦横比を固定して切り抜いてよい。共通素材は `public/images/works/`。
+  2MB前後のPNGなので **`next/image` を通す**（`fill` + `sizes`。実測で 2.0MB → 57KB/webp）
 
 **Bookmark `/articles`**（ナビ・見出しの表示名は "Bookmark"、URLは `/articles` のまま）
 
@@ -210,15 +217,15 @@ shadcn/ui の CSS variables 規約に準拠（Tailwind v4 の `@theme` にマッ
 |---|---|
 | カテゴリTabs | すべて / Design / Develop / Other。カテゴリ = DBの分かれ方（後述） |
 | タグchip | 複数選択（OR）。**選択中カテゴリのタグのみ表示**。タグ語彙はDBごとに異なるため「すべて」選択時はタグ行を出さない。**並び順は Notion に登録されている順**（出現数順にしない。`dataSources.retrieve` のスキーマから取る） |
-| お気に入りのみ | チェックボックスプロパティでの絞り込みトグル。星アイコンは `--star`（黄色） |
-| 表示切替 | リスト / カードのToggleGroup。既定はリスト |
+| おすすめのみ | チェックボックスプロパティでの絞り込みトグル。星アイコンは `--star`（黄色）。**印が付いた記事にだけ星を出す**（自分で付けられるように見せない） |
+| 表示切替 | カード / リストの `Segmented`。**既定はカード**（並びもカードが先） |
 
-状態はURLクエリに持たせる（`?cat=design&view=card&tags=UI,AI&star=1`）。リロード・共有・戻るで再現できる。
+状態はURLクエリに持たせる（`?cat=design&view=list&tags=UI,AI&star=1`）。既定値はURLに出さない。リロード・共有・戻るで再現できる。
 
 *一覧（2形式）*
 
-- **リスト（既定）**: 1行に ☆・タイトル・概要・種別・タグ・ドメイン・日付。情報量が多くストックを探すのに速い
-- **カード**: 16:9サムネイル + 種別 + タイトル + 概要2行 + タグ + ドメイン/日付。サムネイルで思い出したいとき用
+- **カード（既定）**: 16:9サムネイル + 種別 + タイトル + 概要2行 + タグ + ドメイン/日付。サムネイルで思い出したいとき用
+- **リスト**: 1行に ☆・タイトル・概要・種別・タグ・ドメイン・日付。情報量が多くストックを探すのに速い
 - どちらも面全体が外部リンク。右端（カードは右上）の小さなボタンで詳細モーダルを開く
 - faviconは表示しない（外部サービスへのリクエストを増やさないため。ドメインは文字で出す）
 
@@ -401,14 +408,15 @@ NOTION_DB_OTHER=
 ---
 title: 賃貸物件検索サービスのCVR改善
 slug: rental-search-cvr        # ディレクトリ名と一致させる
-# type の選択肢: website（Webサイト制作） / web-service（Webサービス） / other（その他）
+# type の選択肢: website（Webサイト制作） / web-service（Webサービス） / extension（拡張機能） / other（その他）
 type: web-service
 # roles / stack は自由記述。ここに書いた文字列がそのまま画面に出る
 roles: [UIデザイン, フロントエンド開発]
-period: 2025                   # 表示用の自由文字列
 stack: [Next.js, TypeScript, GA4]
 summary: 検索・一覧UIの改善とGA4での効果検証。   # 一覧カードの説明文（実装で追加）
-thumbnail: /works/rental-search.png   # 任意。無ければプレースホルダー表示
+# サムネイル（任意）。共通の抽象画像は public/images/works/thumb-1〜10.png から選ぶ。
+# 記事自身のディレクトリの画像を使うときは hero.png のように相対パスで書く
+thumbnail: /images/works/thumb-1.png
 published: true
 order: 1                       # 一覧の並び順
 ---
@@ -425,6 +433,7 @@ order: 1                       # 一覧の並び順
 
 **実績は1件につき1ディレクトリ。** 本文は必ず `index.md`、画像などの素材は同じディレクトリに置く。
 ディレクトリ名がそのまま slug になる（frontmatter の `slug` と一致していないとビルドが落ちる）。
+`.` / `_` 始まりのディレクトリは実績として読まないので、下書きや作業用の置き場に使える。
 
 ```
 content/works/<slug>/
@@ -434,11 +443,11 @@ content/works/<slug>/
 
 **マスタを持つのは `type` だけ。** 一覧（`/works`）の絞り込みタブがこの値から作られるので、
 表記ゆれがあるとタブが増えてしまうため、`src/lib/profile.ts` の `WORK_TYPES` に固定している
-（`website` / `web-service` / `other`）。`roles` と `stack` はマスタを持たず、
+（`website` / `web-service` / `extension` / `other`）。`roles` と `stack` はマスタを持たず、
 md に書いた文字列をそのまま画面に出す。
 
 `lib/works.ts` でパース・型付け（frontmatterはzodでバリデーション）。
-`period` は YAML が `2025` を数値として読むため、実装側で文字列に寄せている。
+実績に期間（`period`）は持たせない。
 
 `content/` は public ではないので、本文中の相対パス画像は `remarkWorkAssets` が
 `/works/<slug>/media/<file>` に書き換え、同じパスのルートハンドラが実ファイルを返す。
@@ -461,6 +470,7 @@ md に書いた文字列をそのまま画面に出す。
 ├── public/
 │   └── images/                # 配信する画像はここに集約
 │       ├── ogp.png            #   OGP（1200×630）
+│       ├── works/             #   実績サムネイルの共通素材（抽象グラデーション）
 │       ├── favicon/           #   manifest が参照するPWAアイコン
 │       └── brand/             #   SNSマークの原典（実体は brand-icons.tsx にインライン）
 ├── src/

@@ -13,7 +13,6 @@ export default function ContactPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Contact"
         title="お問い合わせ"
         description="お仕事のご相談・ご質問はこちらからお送りください。3営業日以内にご返信します。"
       />

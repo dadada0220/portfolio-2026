@@ -24,15 +24,13 @@ export function ArticleRow({
 
   const body = (
     <>
-      <Star
-        aria-label={article.starred ? "おすすめ" : undefined}
-        className={cn(
-          "mt-0.5 size-4 shrink-0",
-          article.starred
-            ? "fill-star text-star"
-            : "text-muted-foreground/30"
-        )}
-      />
+      {/* おすすめの印。付いていない記事には出さない
+          （薄い星を並べると、自分で付けられるように見えてしまう） */}
+      <span aria-hidden className="mt-0.5 size-4 shrink-0">
+        {article.starred ? (
+          <Star aria-label="おすすめ" className="size-4 fill-star text-star" />
+        ) : null}
+      </span>
 
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">

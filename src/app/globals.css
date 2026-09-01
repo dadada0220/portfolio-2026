@@ -49,17 +49,25 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  /* 画像の上に載せる文字。面の色ではなく「覆いの上」の色なので明暗で切り替えない */
+  --color-on-image: var(--on-image);
+  --color-on-image-muted: var(--on-image-muted);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) * 1.4);
   --radius-2xl: calc(var(--radius) * 1.8);
+  /* 実績カードの外枠。2xl(14.4px) より 2px 小さい */
+  --radius-card: calc(var(--radius) * 1.55);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
   /* 影は 2 段階だけ。shadow-sm=既定 / shadow-md=ポップオーバー・ドロワー */
   --shadow-xs: var(--elevation-sm);
   --shadow-sm: var(--elevation-sm);
   --shadow-md: var(--elevation);
+  /* 実績カードの立体感（検討中）。面を1枚持ち上げる二段の影 */
+  --shadow-lift: var(--elevation-lift);
+  --shadow-lift-hover: var(--elevation-lift-hover);
 }
 
 :root {
@@ -82,7 +90,7 @@
   --input: hsl(240 5.9% 90%);
   --destructive: hsl(0 72% 45%);
   --destructive-foreground: hsl(0 0% 98%);
-  /* お気に入り（☆）だけに使う黄色。primary とは別の意味を持つので独立させる */
+  /* おすすめ（☆）だけに使う黄色。primary とは別の意味を持つので独立させる */
   --star: hsl(43 96% 46%);
 
   /* Primary — 唯一の彩色。主アクション / アクティブなナビ / フォーカスリングのみ */
@@ -106,6 +114,10 @@
   --chart-3: hsl(240 4% 46%);
   --chart-4: hsl(240 5% 34%);
   --chart-5: hsl(240 6% 20%);
+
+  /* 画像の上に置く文字。下の覆い（bg-hero-scrim）とセットで使う */
+  --on-image: hsl(0 0% 100%);
+  --on-image-muted: hsl(0 0% 100% / 0.78);
 
   --radius: 0.5rem;
 
@@ -142,6 +154,12 @@
   --elevation-sm: 0 1px 2px 0 hsl(240 6% 10% / 0.05);
   --elevation:
     0 1px 3px 0 hsl(240 6% 10% / 0.08), 0 1px 2px -1px hsl(240 6% 10% / 0.06);
+
+  /* 接地の1pxと、遠くのやわらかい影の二段。実物のカードのように面を持ち上げる */
+  --elevation-lift:
+    0 1px 2px 0 hsl(240 6% 10% / 0.06), 0 10px 24px -10px hsl(240 6% 10% / 0.14);
+  --elevation-lift-hover:
+    0 1px 2px 0 hsl(240 6% 10% / 0.08), 0 18px 40px -14px hsl(240 6% 10% / 0.2);
 
   /* 欧文は Noto Sans、和文は游ゴシック（OS標準）。
      Noto Sans は latin しか持たないので、和文は自動的に次点へ落ちる */
@@ -213,6 +231,10 @@
   --elevation-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.4);
   --elevation:
     0 1px 3px 0 hsl(0 0% 0% / 0.5), 0 1px 2px -1px hsl(0 0% 0% / 0.4);
+  --elevation-lift:
+    0 1px 2px 0 hsl(0 0% 0% / 0.5), 0 10px 24px -10px hsl(0 0% 0% / 0.6);
+  --elevation-lift-hover:
+    0 1px 2px 0 hsl(0 0% 0% / 0.6), 0 18px 40px -14px hsl(0 0% 0% / 0.7);
 
   color-scheme: dark;
 }
@@ -281,7 +303,7 @@
     color: var(--primary);
   }
   .prose-work a {
-    @apply text-foreground underline underline-offset-4;
+    @apply text-foreground underline underline-offset-4 hover:no-underline;
   }
   .prose-work strong {
     @apply font-medium text-foreground;
@@ -370,8 +392,39 @@
    グラデーションのユーティリティ
    生の色値はここ（globals.css）の外に書かない
    ============================================================ */
+/*
+ * カード面。角丸と影をここ1箇所で決めて、サイト中の箱の調子を揃える。
+ * 基準は実績カード（`WorkCard`）— 角丸 12.4px と、接地の1px + 遠くのやわらかい影の二段。
+ * 中身の余白は箱ごとに違うので、padding は各コンポーネントで指定する。
+ */
+@utility surface-card {
+  @apply rounded-card border bg-card shadow-lift;
+}
+
+/*
+ * 一段沈めた台紙。画像を額装するときだけ使い、中に `surface-card` を置く（実績カード）。
+ * 文字だけの箱には使わない（囲う対象が無いのに面が増える）。
+ */
+@utility surface-mat {
+  @apply rounded-card bg-muted shadow-lift;
+}
+
 @utility bg-brand {
   background-image: var(--gradient-brand);
+}
+
+/*
+ * 実績詳細のヒーローで、サムネイルの上に敷く覆い。
+ * 下ほど濃くして、下端に置いたタイトルの可読性を担保する。
+ * 素材はどれも明るい抽象グラデーションなので、暗い側に倒して文字を白で置く。
+ */
+@utility bg-hero-scrim {
+  background-image: linear-gradient(
+    to top,
+    hsl(240 10% 3.9% / 0.82) 0%,
+    hsl(240 10% 3.9% / 0.55) 45%,
+    hsl(240 10% 3.9% / 0.25) 100%
+  );
 }
 
 /* 主アクションのボタン用。ホバーで background-position を動かせるよう広く敷いておく */

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { PanelLeft, PanelLeftClose } from "lucide-react";
@@ -11,7 +12,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { toggleSidebar } from "@/lib/sidebar-store";
-import { navItems, site } from "@/lib/site";
+import { navItems } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 /**
@@ -53,6 +54,21 @@ export function SideNavContent({
   onNavigate?: () => void;
 }) {
   const pathname = usePathname();
+
+  /**
+   * 開いてよいツールチップは常に1つだけ。
+   *
+   * 畳むとナビの当たり判定が w-52 → w-8 に縮むので、ポインタを動かしていなくても
+   * トリガーが足元から外れる。このとき pointerleave が飛ばないことがあり、
+   * 素の Radix に任せると閉じ損ねたツールチップが積み上がって「全部出る」状態になる。
+   * 開いている項目を1つだけ持ち、開閉の切り替え時にはそれも捨てる。
+   */
+  const [openHref, setOpenHref] = useState<string | null>(null);
+  const [lastCollapsed, setLastCollapsed] = useState(collapsed);
+  if (lastCollapsed !== collapsed) {
+    setLastCollapsed(collapsed);
+    setOpenHref(null);
+  }
 
   return (
     <div className="flex h-full flex-col gap-3 whitespace-nowrap">
@@ -104,7 +120,15 @@ export function SideNavContent({
           const Icon = item.icon;
 
           return (
-            <Tooltip key={item.href}>
+            <Tooltip
+              key={item.href}
+              open={collapsed && openHref === item.href}
+              onOpenChange={(open) =>
+                setOpenHref((current) =>
+                  open ? item.href : current === item.href ? null : current
+                )
+              }
+            >
               <TooltipTrigger asChild>
                 <Link
                   href={item.href}
@@ -138,21 +162,6 @@ export function SideNavContent({
           );
         })}
       </nav>
-
-      <div
-        aria-hidden={collapsed}
-        className={cn(
-          "mt-auto flex flex-col gap-0.5 rounded-lg border bg-card p-3",
-          CONTENT_WIDTH,
-          collapsed && "pointer-events-none",
-          fade(collapsed)
-        )}
-      >
-        <p className="text-xs font-bold">{site.name}</p>
-        <p className="font-mono text-[0.6875rem] text-muted-foreground">
-          {site.role}
-        </p>
-      </div>
     </div>
   );
 }

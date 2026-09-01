@@ -19,7 +19,7 @@ export function SkillItem({
   tile: 1 | 2 | 3 | 4 | 5 | 6;
 }) {
   return (
-    <div className="flex flex-col gap-3 rounded-xl border bg-card p-5 shadow-sm">
+    <div className="surface-card flex flex-col gap-3 p-5">
       <div className="flex items-center gap-3">
         <span
           aria-hidden

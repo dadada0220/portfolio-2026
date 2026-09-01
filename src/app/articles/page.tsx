@@ -30,7 +30,6 @@ export default async function ArticlesPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Bookmark"
         title="ブックマーク"
         description="Notionに溜めている記事・ツール・参考サイトです。カテゴリとタグで絞り込めます。"
       />

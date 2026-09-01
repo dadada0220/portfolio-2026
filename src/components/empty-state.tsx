@@ -15,7 +15,7 @@ export function EmptyState({
   const Icon = variant === "error" ? TriangleAlert : Inbox;
 
   return (
-    <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed bg-card px-6 py-12 text-center">
+    <div className="rounded-card flex flex-col items-center gap-2 border border-dashed bg-card px-6 py-12 text-center">
       <Icon aria-hidden className="size-[18px] text-muted-foreground" />
       <p className="text-sm font-medium">{title}</p>
       {description ? (

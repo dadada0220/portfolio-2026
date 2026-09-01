@@ -5,7 +5,7 @@ export default function Loading() {
   return (
     <>
       <PageHeaderSkeleton />
-      <div className="flex max-w-xl flex-col gap-5 rounded-lg border bg-card p-6">
+      <div className="surface-card flex max-w-xl flex-col gap-5 p-6">
         {[1, 2].map((index) => (
           <div key={index} className="flex flex-col gap-2">
             <Skeleton className="h-4 w-24" />

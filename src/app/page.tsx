@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { ArrowRight, Mail } from "lucide-react";
+import { Mail } from "lucide-react";
 
 import { PageHeader, SectionHeading } from "@/components/page-header";
 import { SkillItem } from "@/components/skill-item";
+import { ViewAllLink } from "@/components/view-all-link";
 import { WorkCard } from "@/components/work-card";
 import { Button } from "@/components/ui/button";
 import { intro, skills } from "@/lib/profile";
@@ -35,15 +36,8 @@ export default async function HomePage() {
         <SectionHeading
           eyebrow="Works"
           title="最近の実績"
-          description="これまでに携わった案件を掲載しています。"
-          action={
-            <Button asChild variant="outline" size="sm">
-              <Link href="/works">
-                すべて見る
-                <ArrowRight data-icon="inline-end" />
-              </Link>
-            </Button>
-          }
+          description="これまでに携わった案件や成果物を掲載しています。"
+          action={<ViewAllLink href="/works" />}
         />
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {recentWorks.map((work) => (
@@ -65,7 +59,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="relative overflow-hidden rounded-2xl border bg-card p-8 shadow-sm sm:p-10">
+      <section className="surface-card relative overflow-hidden p-8 sm:p-10">
         <div
           aria-hidden
           className="bg-glow pointer-events-none absolute inset-0"

@@ -77,7 +77,7 @@ export function ArticleCard({
     "group flex h-full w-full flex-col gap-3 p-3 text-left transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
 
   return (
-    <div className="relative flex h-full w-full rounded-lg border bg-card shadow-sm transition-colors hover:border-border-strong hover:bg-elevated">
+    <div className="surface-card relative flex h-full w-full transition-colors hover:border-border-strong hover:bg-elevated">
       {article.url ? (
         <a
           href={article.url}

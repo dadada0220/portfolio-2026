@@ -23,7 +23,7 @@ export function PageHeaderSkeleton({ hasDescription = true }) {
 
 function CardSkeleton({ lines = 2, className }: { lines?: number; className?: string }) {
   return (
-    <div className={cn("flex flex-col gap-2 rounded-lg border bg-card p-4", className)}>
+    <div className={cn("surface-card flex flex-col gap-2 p-4", className)}>
       <Skeleton className="h-4 w-24" />
       {Array.from({ length: lines }).map((_, index) => (
         <Skeleton
@@ -84,7 +84,7 @@ export function ArticleListSkeleton({ rows = 10 }: { rows?: number }) {
       </div>
       <Skeleton className="h-4 w-96" />
       <Skeleton className="h-4 w-12" />
-      <div className="overflow-hidden rounded-lg border bg-card">
+      <div className="surface-card overflow-hidden">
         {Array.from({ length: rows }).map((_, index) => (
           <div
             key={index}

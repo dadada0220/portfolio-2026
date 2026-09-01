@@ -10,6 +10,7 @@ import { z } from "zod";
 
 import { remarkWorkAssets } from "@/lib/markdown/remark-work-assets";
 import { remarkWorkBlocks } from "@/lib/markdown/remark-work-blocks";
+import { remarkWorkLinks } from "@/lib/markdown/remark-work-links";
 import { WORK_TYPES } from "@/lib/profile";
 
 /**
@@ -31,11 +32,14 @@ const frontmatterSchema = z.object({
   type: z.enum(WORK_TYPES),
   // roles / stack はマスタを持たない。md に書いた文字列をそのまま画面に出す
   roles: z.array(z.string().min(1)).min(1),
-  // YAML は `period: 2025` を数値として読むので、表示用の文字列に寄せる
-  period: z.union([z.string(), z.number()]).transform(String).pipe(z.string().min(1)),
   stack: z.array(z.string()).default([]),
   summary: z.string().min(1),
-  thumbnail: z.string().optional(),
+  /**
+   * サムネイル。一覧カードと詳細ページ上部で使う。
+   * `/images/works/thumb-1.png` のように `/` 始まりで書くと public のパスとして扱い、
+   * `hero.png` のように書くと記事自身のディレクトリの素材として解決する。
+   */
+  thumbnail: z.string().min(1).optional(),
   published: z.boolean().default(true),
   order: z.number().int(),
 });
@@ -47,6 +51,21 @@ export type Work = WorkFrontmatter & {
   html: string;
 };
 
+/**
+ * frontmatter の `thumbnail` を配信URLに直す。
+ * 本文中の画像（`remarkWorkAssets`）と同じ規則で、相対パスは記事自身の素材として解く。
+ */
+function resolveThumbnail(
+  thumbnail: string | undefined,
+  slug: string
+): string | undefined {
+  if (!thumbnail) return undefined;
+  if (/^([a-z]+:)?\/\//i.test(thumbnail) || thumbnail.startsWith("/")) {
+    return thumbnail;
+  }
+  return `/works/${slug}/media/${thumbnail.replace(/^\.\//, "")}`;
+}
+
 async function toHtml(markdown: string, slug: string): Promise<string> {
   const file = await remark()
     // ディレクティブの解析 → ブロックへの変換、の順に通す
@@ -54,6 +73,8 @@ async function toHtml(markdown: string, slug: string): Promise<string> {
     .use(remarkWorkBlocks, { source: `content/works/${slug}/${WORK_ENTRY_FILE}` })
     .use(remarkWorkAssets, { slug })
     .use(remarkGfm)
+    // GFM の自動リンクも含めてから属性を付ける
+    .use(remarkWorkLinks)
     .use(remarkHtml, { sanitize: false })
     .process(markdown);
   return String(file);
@@ -86,7 +107,11 @@ async function readWork(slug: string): Promise<Work> {
     );
   }
 
-  return { ...parsed.data, html: await toHtml(content, slug) };
+  return {
+    ...parsed.data,
+    thumbnail: resolveThumbnail(parsed.data.thumbnail, slug),
+    html: await toHtml(content, slug),
+  };
 }
 
 let cache: Promise<Work[]> | undefined;
@@ -107,8 +132,14 @@ export function getWorks(): Promise<Work[]> {
       );
     }
 
+    // `.` / `_` 始まりは実績ではない置き場として読み飛ばす
     const slugs = entries
-      .filter((entry) => entry.isDirectory() && !entry.name.startsWith("."))
+      .filter(
+        (entry) =>
+          entry.isDirectory() &&
+          !entry.name.startsWith(".") &&
+          !entry.name.startsWith("_")
+      )
       .map((entry) => entry.name);
 
     const works = await Promise.all(slugs.map(readWork));

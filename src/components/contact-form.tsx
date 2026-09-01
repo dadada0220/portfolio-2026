@@ -26,7 +26,7 @@ export function ContactForm() {
 
   if (state.status === "success") {
     return (
-      <div className="flex flex-col items-start gap-2 rounded-lg border bg-card p-6 shadow-sm">
+      <div className="surface-card flex flex-col items-start gap-2 p-6">
         <CheckCircle2 aria-hidden className="size-[18px] text-foreground" />
         <p className="text-sm font-medium">送信しました</p>
         <p className="text-sm text-muted-foreground">
@@ -39,7 +39,7 @@ export function ContactForm() {
   return (
     <form
       action={formAction}
-      className="flex max-w-xl flex-col gap-5 rounded-lg border bg-card p-6 shadow-sm"
+      className="surface-card flex max-w-xl flex-col gap-5 p-6"
     >
       {state.status === "error" && state.message ? (
         <p

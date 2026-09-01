@@ -3,7 +3,10 @@ import type { ReactNode } from "react";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { cn } from "@/lib/utils";
 
-/** セクションの頭に置く小さなラベル。グラデーションのドットで少しだけ色を差す。 */
+/**
+ * セクションの頭に置く小さなラベル。グラデーションのドットで少しだけ色を差す。
+ * **ページ見出しには使わない**（パンくずと同じことを言うため）。`SectionHeading` 専用。
+ */
 export function Eyebrow({ children }: { children: ReactNode }) {
   return (
     <span className="pill inline-flex w-fit items-center gap-2 border bg-card py-1 pr-3 pl-2.5 text-xs font-medium text-muted-foreground shadow-sm">
@@ -15,7 +18,6 @@ export function Eyebrow({ children }: { children: ReactNode }) {
 
 type PageHeaderProps = {
   title: ReactNode;
-  eyebrow?: ReactNode;
   description?: ReactNode;
   actions?: ReactNode;
   /** 詳細ページで、パンくずの末尾に出す現在地。指定すると親階層がリンクになる */
@@ -27,7 +29,6 @@ type PageHeaderProps = {
 
 export function PageHeader({
   title,
-  eyebrow,
   description,
   actions,
   breadcrumbCurrent,
@@ -42,8 +43,6 @@ export function PageHeader({
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className={cn("flex min-w-0 flex-col", hero ? "gap-4" : "gap-2")}>
-          {eyebrow ? <Eyebrow>{eyebrow}</Eyebrow> : null}
-
           <h1
             className={cn(
               "min-w-0 tracking-tight",
@@ -59,7 +58,7 @@ export function PageHeader({
             <p
               className={cn(
                 "w-full text-muted-foreground",
-                hero ? "text-[0.9375rem] leading-relaxed" : "text-sm"
+                hero ? "text-sm leading-relaxed" : "text-sm"
               )}
             >
               {description}

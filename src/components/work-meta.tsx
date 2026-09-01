@@ -2,7 +2,7 @@ import { WORK_TYPE_LABELS, type WorkType } from "@/lib/profile";
 
 function Cell({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex flex-col gap-1 rounded-lg border bg-card p-4 shadow-sm">
+    <div className="surface-card flex flex-col gap-1 p-4">
       <dt className="font-mono text-xs tracking-wide text-muted-foreground uppercase">
         {label}
       </dt>

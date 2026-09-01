@@ -53,53 +53,56 @@ export function AppShell({ children }: { children: ReactNode }) {
           <Logo className="h-8 w-auto max-w-none" />
         </Link>
 
-        <div className="ml-auto flex items-center gap-1">
-          {externalLinks.map((link) => {
-            const Icon = link.icon;
-            return (
-              <Tooltip key={link.href}>
-                <TooltipTrigger asChild>
-                  <Button
-                    asChild
-                    variant="ghost"
-                    size="icon-sm"
-                    className="hidden text-muted-foreground sm:inline-flex"
-                  >
-                    <a
-                      href={link.href}
-                      target="_blank"
-                      rel="noreferrer noopener"
-                      aria-label={link.label}
+        {/* アイコン群は等間隔の1グループ。主アクションだけを離して置く */}
+        <div className="ml-auto flex items-center gap-3">
+          <div className="flex items-center gap-1">
+            {externalLinks.map((link) => {
+              const Icon = link.icon;
+              return (
+                <Tooltip key={link.href}>
+                  <TooltipTrigger asChild>
+                    <Button
+                      asChild
+                      variant="ghost"
+                      size="icon-sm"
+                      className="hidden text-muted-foreground sm:inline-flex"
                     >
-                      {/* 塗りのブランドマークは lucide のストローク（1.75）より
-                          重く見えるので、14px に落として並びの重さを揃える */}
-                      <Icon className="size-3.5" />
-                    </a>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">{link.label}</TooltipContent>
-              </Tooltip>
-            );
-          })}
+                      <a
+                        href={link.href}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        aria-label={link.label}
+                      >
+                        {/* 塗りのブランドマークは lucide のストローク（1.75）より
+                            重く見えるので、14px に落として並びの重さを揃える */}
+                        <Icon className="size-3.5" />
+                      </a>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">{link.label}</TooltipContent>
+                </Tooltip>
+              );
+            })}
 
-          {/* ダークモードは色の検討中。導線だけ先に置いてある */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                aria-label="ダークモード（準備中）"
-                className="ml-2 text-muted-foreground"
-              >
-                <Moon />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">
-              ダークモード（準備中）
-            </TooltipContent>
-          </Tooltip>
+            {/* ダークモードは色の検討中。導線だけ先に置いてある */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label="ダークモード（準備中）"
+                  className="text-muted-foreground"
+                >
+                  <Moon />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                ダークモード（準備中）
+              </TooltipContent>
+            </Tooltip>
+          </div>
 
-          <Button asChild variant="brand" size="cta" className="ml-2">
+          <Button asChild variant="brand" size="cta">
             <Link href="/contact">
               <Mail data-icon="inline-start" />
               <span className="hidden sm:inline">お問い合わせ</span>

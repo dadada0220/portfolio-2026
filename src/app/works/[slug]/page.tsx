@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { PageHeader } from "@/components/page-header";
-import { WorkMeta } from "@/components/work-meta";
+import { WorkHero } from "@/components/work-hero";
 import { site } from "@/lib/site";
 import { getWork, getWorks } from "@/lib/works";
 
@@ -42,14 +42,25 @@ export default async function WorkDetailPage({
 
   return (
     <>
-      <PageHeader
-        eyebrow="Works"
-        title={work.title}
-        description={work.summary}
-        breadcrumbCurrent={work.title}
-      />
+      {/* サムネイルがあるときは、それを背景にしたヒーローがページ見出しを兼ねる */}
+      {work.thumbnail ? (
+        <WorkHero
+          src={work.thumbnail}
+          title={work.title}
+          summary={work.summary}
+        />
+      ) : (
+        <PageHeader
+          title={work.title}
+          description={work.summary}
+          breadcrumbCurrent={work.title}
+        />
+      )}
 
-      <WorkMeta type={work.type} roles={work.roles} stack={work.stack} />
+      {/* 種別 / 領域 / スタックのサマリは一旦非表示。
+          frontmatter（type / roles / stack）はそのまま持っているので、
+          この行を戻せば元どおり出る */}
+      {/* <WorkMeta type={work.type} roles={work.roles} stack={work.stack} /> */}
 
       <article
         className="prose-work"

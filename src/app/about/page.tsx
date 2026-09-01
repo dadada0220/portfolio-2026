@@ -13,11 +13,11 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <>
-      <PageHeader eyebrow="About" title="事務所について" />
+      <PageHeader title="事務所について" />
 
       <section className="flex flex-col gap-5">
         <SectionHeading eyebrow="Profile" title="概要" />
-        <dl className="divide-y overflow-hidden rounded-xl border bg-card shadow-sm">
+        <dl className="surface-card divide-y overflow-hidden">
           {company.map((row) => (
             <div
               key={row.label}
@@ -52,7 +52,7 @@ export default function AboutPage() {
           title="略歴"
           description="代表がこれまでに在籍した組織と、担当してきた役割。"
         />
-        <div className="rounded-xl border bg-card p-6 shadow-sm">
+        <div className="surface-card p-6">
           <Timeline items={timeline} />
         </div>
       </section>

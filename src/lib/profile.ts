@@ -15,13 +15,14 @@ import {
  * この一覧から作られるので、表記ゆれがあるとタブが増えてしまうため。
  * `roles` や `stack` はマスタを持たず、md に書いた文字列をそのまま出す。
  */
-export const WORK_TYPES = ["website", "web-service", "other"] as const;
+export const WORK_TYPES = ["website", "web-service", "extension", "other"] as const;
 
 export type WorkType = (typeof WORK_TYPES)[number];
 
 export const WORK_TYPE_LABELS: Record<WorkType, string> = {
   website: "Webサイト制作",
   "web-service": "Webサービス",
+  extension: "拡張機能",
   other: "その他",
 };
 

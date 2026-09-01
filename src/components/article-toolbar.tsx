@@ -1,10 +1,9 @@
 "use client";
 
-import { LayoutGrid, List, Star } from "lucide-react";
+import { LayoutGrid, List, Star, X } from "lucide-react";
 
+import { Segmented, type SegmentedItem } from "@/components/segmented";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { ARTICLE_CATEGORIES, CATEGORY_LABELS } from "@/lib/articles";
 import type { ArticleCategory } from "@/lib/articles";
 import { cn } from "@/lib/utils";
@@ -39,28 +38,34 @@ export function ArticleToolbar({
     });
   };
 
+  const categoryItems: SegmentedItem[] = [
+    { value: "all", label: `すべて（${counts.all}）` },
+    ...ARTICLE_CATEGORIES.map((category) => ({
+      value: category,
+      label: `${CATEGORY_LABELS[category]}（${counts[category]}）`,
+    })),
+  ];
+
+  const viewItems: SegmentedItem[] = [
+    { value: "card", label: <LayoutGrid aria-label="カード表示" className="size-3.5" /> },
+    { value: "list", label: <List aria-label="リスト表示" className="size-3.5" /> },
+  ];
+
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center gap-2">
-        <Tabs
+        <Segmented
+          items={categoryItems}
           value={filters.category}
-          onValueChange={(value) =>
-            // カテゴリを変えるとタグの語彙も変わるので、選択中のタグは捨てる
+          label="カテゴリで絞り込み"
+          // カテゴリを変えるとタグの語彙も変わるので、選択中のタグは捨てる
+          onSelect={(value) =>
             onChange({
               category: value as ArticleFilters["category"],
               tags: [],
             })
           }
-        >
-          <TabsList>
-            <TabsTrigger value="all">すべて ({counts.all})</TabsTrigger>
-            {ARTICLE_CATEGORIES.map((category) => (
-              <TabsTrigger key={category} value={category}>
-                {CATEGORY_LABELS[category]} ({counts[category]})
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
+        />
 
         <div className="ml-auto flex items-center gap-2">
           <Button
@@ -73,35 +78,21 @@ export function ArticleToolbar({
               data-icon="inline-start"
               className={cn(filters.starred && "fill-star text-star")}
             />
-            お気に入りのみ
+            おすすめのみ
           </Button>
 
-          <ToggleGroup
-            type="single"
+          <Segmented
+            items={viewItems}
             value={filters.view}
-            onValueChange={(value) => {
-              if (value) onChange({ view: value as ArticleFilters["view"] });
-            }}
-            variant="outline"
-            size="sm"
-            spacing={0}
-            aria-label="表示形式"
-          >
-            <ToggleGroupItem value="list" aria-label="リスト表示">
-              <List />
-            </ToggleGroupItem>
-            <ToggleGroupItem value="card" aria-label="カード表示">
-              <LayoutGrid />
-            </ToggleGroupItem>
-          </ToggleGroup>
+            label="表示形式"
+            onSelect={(value) =>
+              onChange({ view: value as ArticleFilters["view"] })
+            }
+          />
         </div>
       </div>
 
-      {filters.category === "all" ? (
-        <p className="text-xs text-muted-foreground">
-          カテゴリを選ぶとタグで絞り込めます（タグの語彙はカテゴリごとに異なります）。
-        </p>
-      ) : (
+      {filters.category === "all" ? null : (
         <div className="flex flex-wrap items-center gap-1.5">
           {tagOptions.map((tag) => {
             const active = filters.tags.includes(tag);
@@ -112,10 +103,11 @@ export function ArticleToolbar({
                 aria-pressed={active}
                 onClick={() => toggleTag(tag)}
                 className={cn(
-                  "inline-flex h-7 items-center rounded-md border px-2.5 text-xs transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+                  // 太さは選択状態で変えない。幅が動いてタグが折り返してしまうため
+                  "inline-flex h-7 cursor-pointer items-center rounded-md border px-2.5 text-xs font-medium transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
                   active
-                    ? "border-border-strong bg-muted font-medium text-foreground"
-                    : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                    ? "border-foreground bg-foreground text-background"
+                    : "border-border text-muted-foreground hover:bg-muted hover:text-foreground"
                 )}
               >
                 {tag}
@@ -128,6 +120,7 @@ export function ArticleToolbar({
               size="xs"
               onClick={() => onChange({ tags: [] })}
             >
+              <X data-icon="inline-start" />
               タグをクリア
             </Button>
           ) : null}

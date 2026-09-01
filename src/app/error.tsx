@@ -18,7 +18,6 @@ export default function Error({
 
   return (
     <PageHeader
-      eyebrow="Error"
       title="表示中に問題が発生しました"
       description="時間をおいて、もう一度お試しください。"
       actions={
