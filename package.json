@@ -20,6 +20,7 @@
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "remark": "^15.0.1",
+    "remark-directive": "^4.0.0",
     "remark-gfm": "^4.0.1",
     "remark-html": "^16.0.1",
     "resend": "^6.25.0",

@@ -71,7 +71,9 @@ export function AppShell({ children }: { children: ReactNode }) {
                       rel="noreferrer noopener"
                       aria-label={link.label}
                     >
-                      <Icon />
+                      {/* 塗りのブランドマークは lucide のストローク（1.75）より
+                          重く見えるので、14px に落として並びの重さを揃える */}
+                      <Icon className="size-3.5" />
                     </a>
                   </Button>
                 </TooltipTrigger>

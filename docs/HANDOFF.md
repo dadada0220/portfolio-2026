@@ -20,7 +20,7 @@
 |---|---|
 | フレームワーク | Next.js (App Router) + TypeScript |
 | スタイリング | Tailwind CSS v4 + shadcn/ui |
-| 実績 | `content/works/*.md`（gray-matter + zodでfrontmatter検証） |
+| 実績 | `content/works/<slug>/index.md`（1件＝1ディレクトリ。素材も同じ場所。gray-matter + zodでfrontmatter検証） |
 | 記事 | Notion API（`@notionhq/client`）+ ISR `revalidate = 3600` |
 | フォーム | Server Action + Resend |
 | デプロイ | Vercel |
@@ -127,7 +127,7 @@ frontmatterは design-doc.md §5.2 を参照。本文は「課題 → 取り組�
 │   ├── style-guide.html       # スタイルガイド（portfolio-style-guide.html をリネーム）
 │   ├── design-system.md       # design-doc.md §2 の要約（フェーズ0で作る）
 │   └── resources.md           # design-doc.md §2.6 の切り出し（フェーズ0で作る）
-├── content/works/*.md
+├── content/works/<slug>/       # index.md + 素材（1件＝1ディレクトリ）
 └── src/
     ├── app/                   # 構成は design-doc.md §5.3
     ├── components/ui/         # shadcn（コピー&オウン）

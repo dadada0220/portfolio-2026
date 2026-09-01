@@ -33,7 +33,7 @@ export function SkillItem({
         <h3 className="text-base font-bold tracking-tight">{title}</h3>
       </div>
 
-      <ul className="flex flex-col gap-1.5">
+      <ul className="flex flex-col gap-0.5">
         {lines.map((line) => (
           <li
             key={line}

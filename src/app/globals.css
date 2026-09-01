@@ -253,26 +253,26 @@
    @tailwindcss/typography は入れず、design-system.md のタイポ定義で組む
    ============================================================ */
 @layer components {
+  /* 本文は muted ではなく foreground。長文を読ませる場所なので黒で置く
+     （説明文・メタ情報を muted にするアプリ側のルールとはここだけ扱いが違う） */
   .prose-work {
-    @apply flex flex-col gap-4 text-sm leading-relaxed;
+    @apply flex flex-col gap-4 text-sm leading-relaxed text-foreground;
   }
   .prose-work > * + h2 {
     @apply mt-4;
   }
+  /* 見出しは 20 / 16 / 14px。h2 は design-system のセクション見出しに揃える */
   .prose-work h2 {
-    @apply text-lg font-bold tracking-tight;
+    @apply text-xl font-bold tracking-tight;
   }
   .prose-work h3 {
-    @apply text-sm font-medium;
-  }
-  .prose-work p {
-    @apply text-muted-foreground;
+    @apply text-base font-bold tracking-tight;
   }
   .prose-work ul {
-    @apply flex list-disc flex-col gap-1 pl-5 text-muted-foreground;
+    @apply flex list-disc flex-col gap-1 pl-5;
   }
   .prose-work ol {
-    @apply flex list-decimal flex-col gap-1 pl-5 text-muted-foreground;
+    @apply flex list-decimal flex-col gap-1 pl-5;
   }
   /* 箇条書きの丸だけアクセントカラーにする（数字は色を変えない） */
   .prose-work ul > li::marker {
@@ -294,29 +294,63 @@
     @apply bg-transparent p-0;
   }
   .prose-work blockquote {
-    @apply border-l-2 pl-4 text-muted-foreground;
+    @apply border-l-2 pl-4;
   }
   .prose-work img {
     @apply h-auto max-w-full rounded-lg border;
   }
-  /* テーブル。幅が足りないときは横スクロールさせる（GitHub の markdown と同じ手法） */
+  /* テーブル。幅が足りないときは横スクロールさせる（GitHub の markdown と同じ手法）。
+     角丸は pre / img と同じ rounded-lg。border-collapse だと角がセルに欠かれるので、
+     border-separate にして外周の枠線と角丸をテーブル自身に持たせ、
+     セル側は内側の罫線だけを引く（overflow-x が角丸のクリップも兼ねる） */
   .prose-work table {
-    @apply block w-max max-w-full table-auto overflow-x-auto border-collapse text-sm;
+    @apply block w-max max-w-full table-auto border-separate border-spacing-0 overflow-x-auto rounded-lg border text-sm;
   }
   .prose-work thead {
     @apply bg-muted;
   }
+  .prose-work th,
+  .prose-work td {
+    @apply border-b border-l px-3 py-2;
+  }
+  /* 外周はテーブルの border が引くので、左端の列と最終行では内側の罫線を消す */
+  .prose-work tr > *:first-child {
+    @apply border-l-0;
+  }
+  .prose-work tbody tr:last-child > * {
+    @apply border-b-0;
+  }
   .prose-work th {
-    @apply border px-3 py-2 text-left font-bold text-foreground;
+    @apply text-left font-bold;
   }
   .prose-work td {
-    @apply border px-3 py-2 align-top text-muted-foreground;
+    @apply align-top;
   }
   .prose-work tbody tr:nth-child(even) {
     @apply bg-muted/40;
   }
   .prose-work hr {
     @apply border-t;
+  }
+
+  /* ------------------------------------------------------------
+     カスタムブロック（記法と対応表は src/lib/markdown/blocks.ts）
+     Markdown から class は書かせず、`data-block` だけを目印にする
+     ------------------------------------------------------------ */
+
+  /* 画像 + 見出し + 本文を横に並べるセクション。狭い画面では1カラムまで落とす */
+  .prose-work [data-block="columns"] {
+    @apply grid grid-cols-1 gap-6 sm:grid-cols-2;
+  }
+  .prose-work [data-block="columns"][data-cols="3"] {
+    @apply lg:grid-cols-3;
+  }
+  .prose-work [data-block="col"] {
+    @apply flex flex-col gap-2;
+  }
+  /* 画像の縦横比が揃っていなくても見出しの位置が揃うよう、カラム内だけ比率を固定する */
+  .prose-work [data-block="col"] img {
+    @apply aspect-4/3 w-full object-cover;
   }
 }
 

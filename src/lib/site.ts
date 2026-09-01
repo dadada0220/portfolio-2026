@@ -1,13 +1,17 @@
 import {
-  BookOpen,
   Bookmark,
   Briefcase,
   Building2,
-  Code,
   LayoutDashboard,
   Mail,
   type LucideIcon,
 } from "lucide-react";
+
+import {
+  GithubIcon,
+  ZennIcon,
+  type BrandIcon,
+} from "@/components/brand-icons";
 
 export const site = {
   /** 主語は個人ではなく事務所 */
@@ -19,6 +23,8 @@ export const site = {
   email: "info@itd-creative.com",
   // 本番ドメインが決まったら差し替える（OGPの絶対URL生成に使う）
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://example.com",
+  /** OGP画像。1200×630。metadataBase からの相対パスで書く */
+  ogImage: { url: "/images/ogp.png", width: 1200, height: 630 },
 } as const;
 
 /** 会社概要（About） */
@@ -37,13 +43,13 @@ export const company: { label: string; lines: string[] }[] = [
 
 /**
  * ヘッダーに置く外部リンク。アイコンのみで出す。
- * lucide-react v1 はブランドアイコン（GitHub等）を廃止しているため、
- * 意味の近い汎用アイコンを当てて、名前はツールチップと aria-label で補っている。
+ * lucide-react v1 はブランドアイコンを廃止しているため、公式マークを
+ * `@/components/brand-icons` に持っている。名前はツールチップと aria-label で補う。
  */
-export const externalLinks: { label: string; href: string; icon: LucideIcon }[] =
+export const externalLinks: { label: string; href: string; icon: BrandIcon }[] =
   [
-    { label: "GitHub", href: "https://github.com/dadada0220", icon: Code },
-    { label: "Zenn", href: "https://zenn.dev/dadada", icon: BookOpen },
+    { label: "GitHub", href: "https://github.com/dadada0220", icon: GithubIcon },
+    { label: "Zenn", href: "https://zenn.dev/dadada", icon: ZennIcon },
   ];
 
 export type NavItem = {

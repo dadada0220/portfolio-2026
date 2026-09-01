@@ -21,7 +21,7 @@ export type WorkType = (typeof WORK_TYPES)[number];
 
 export const WORK_TYPE_LABELS: Record<WorkType, string> = {
   corporate: "コーポレートサイト",
-  "web-service": "Webサービス / 管理画面",
+  "web-service": "Webサービス",
   ec: "ECサイト",
   lp: "LP",
   wordpress: "WordPressサイト",
@@ -49,13 +49,13 @@ export const skills: {
   tile: 1 | 2 | 3 | 4 | 5 | 6;
 }[] = [
   {
-    title: "UIデザイン",
+    title: "UIデザイン・情報設計",
     icon: PenTool,
     tile: 1,
     lines: [
-      "大規模なSaaS系管理画面や業務システムのUI/UX設計・改善を中心に対応できます。",
-      "デザインシステムを0ベースで構築・運用した経験があり、HCDの考え方に基づいた情報設計から画面設計まで一貫して行えます。",
-      "コーポレートサイトやLP、バナーなどの制作にも対応可能です。",
+      "SaaSや業務システムのUIデザインや情報設計、定量/定性データに基づいた改善提案",
+      "Figmaを用いたデザインシステムやコンポーネントの設計",
+      "その他、ランディングページやバナーのスクラッチ制作",
     ],
   },
   {
@@ -63,9 +63,9 @@ export const skills: {
     icon: Code2,
     tile: 2,
     lines: [
-      "ReactやNext.js、Vue、Tailwindなどを用いたWebアプリケーション開発に幅広く対応できます。",
-      "TypeScriptによる実装を基本とし、小規模の開発ディレクションも行えます。",
-      "HTML/CSSコーディングやJavaScriptによる動的処理といった制作系の実装も対応可能です。",
+      "ReactやTailwindを用いたWebアプリの開発",
+      "HTML/CSS、SassやWordPressを用いたWeb制作系の実装",
+      "フロントエンドで完結するサイト速度などのパフォーマンス改善",
     ],
   },
   {
@@ -139,11 +139,11 @@ export const timeline: {
  */
 export const intro = {
   headline: "デザインから運用まで、",
-  headlineMuted: "プロダクトを一気通貫で",
+  headlineMuted: "プロダクトを一気通貫で推進",
   body: [
     // "UIデザインとフロントエンド開発を軸に、Webサイトとサービスの制作を行う個人事務所です。",
     // "近年はサービスの課題・施策検討、定量データ分析、Claude Codeを用いたサービス運用などの領域も対応しています。",
     "UIデザインとフロントエンド開発を軸に、新卒から約10年間Web業界に従事。",
-    "近年は、プロダクトの課題・施策検討、定量データの分析、Claude Codeを用いたサービス運用など、幅広い領域に携わっています。",
+    "近年は、プロダクトの課題・施策検討、定量データの分析、Claude Codeを用いたプロダクト運用など、幅広い領域に携わっています。",
   ],
 };

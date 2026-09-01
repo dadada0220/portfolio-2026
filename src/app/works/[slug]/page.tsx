@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { PageHeader } from "@/components/page-header";
 import { WorkMeta } from "@/components/work-meta";
+import { site } from "@/lib/site";
 import { getWork, getWorks } from "@/lib/works";
 
 export async function generateStaticParams() {
@@ -19,10 +20,16 @@ export async function generateMetadata({
   return {
     title: work.title,
     description: work.summary,
+    // openGraph は親（layout）とマージされず丸ごと差し替わるので、
+    // 画像やサイト名もここで引き直す
     openGraph: {
+      type: "article",
+      siteName: site.name,
+      locale: "ja_JP",
+      url: `/works/${work.slug}`,
       title: work.title,
       description: work.summary,
-      type: "article",
+      images: [{ ...site.ogImage, alt: work.title }],
     },
   };
 }

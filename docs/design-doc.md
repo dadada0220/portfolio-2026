@@ -421,8 +421,22 @@ order: 1                       # 一覧の並び順
 ...
 ```
 
-`content/works/*.md` に配置。`lib/works.ts` でパース・型付け（frontmatterはzodでバリデーション）。
+**実績は1件につき1ディレクトリ。** 本文は必ず `index.md`、画像などの素材は同じディレクトリに置く。
+ディレクトリ名がそのまま slug になる（frontmatter の `slug` と一致していないとビルドが落ちる）。
+
+```
+content/works/<slug>/
+├── index.md          # 本文（frontmatter + Markdown）
+└── figma-01.png      # 素材。本文からは ![](figma-01.png) と相対パスで参照する
+```
+
+`lib/works.ts` でパース・型付け（frontmatterはzodでバリデーション）。
 `period` は YAML が `2025` を数値として読むため、実装側で文字列に寄せている。
+
+`content/` は public ではないので、本文中の相対パス画像は `remarkWorkAssets` が
+`/works/<slug>/media/<file>` に書き換え、同じパスのルートハンドラが実ファイルを返す。
+素材を public に置かずディレクトリを分けているのは、記事と素材をまとめて増減させたいため
+（記事を消すときディレクトリごと消せる）。
 
 ### 5.3 ディレクトリ構成
 
@@ -434,7 +448,14 @@ order: 1                       # 一覧の並び順
 │   ├── design-system.md       # §2の要約（AIが常時参照する短縮版）
 │   └── resources.md           # §2.6 外部リソースの使い分け（必要時のみ読ませる）
 ├── content/
-│   └── works/*.md             # 実績
+│   └── works/<slug>/          # 実績1件＝1ディレクトリ
+│       ├── index.md           #   本文
+│       └── *.png              #   素材（本文から相対パスで参照）
+├── public/
+│   └── images/                # 配信する画像はここに集約
+│       ├── ogp.png            #   OGP（1200×630）
+│       ├── favicon/           #   manifest が参照するPWAアイコン
+│       └── brand/             #   SNSマークの原典（実体は brand-icons.tsx にインライン）
 ├── src/
 │   ├── app/
 │   │   ├── layout.tsx         # AppShell適用

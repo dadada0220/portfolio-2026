@@ -18,13 +18,36 @@ const notoSans = Noto_Sans({
   display: "swap",
 });
 
+const defaultTitle = `${site.name} — ${site.role}`;
+
+/**
+ * サイト共通のメタデータ。
+ *
+ * アイコン（favicon.ico / icon.svg / apple-icon.png）と manifest は
+ * `src/app/` 直下のファイル規約で自動的に <link> になるので、ここには書かない。
+ */
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
   title: {
-    default: `${site.name} — ${site.role}`,
+    default: defaultTitle,
     template: `%s | ${site.name}`,
   },
   description: site.description,
+  openGraph: {
+    type: "website",
+    siteName: site.name,
+    locale: "ja_JP",
+    url: "/",
+    title: defaultTitle,
+    description: site.description,
+    images: [{ ...site.ogImage, alt: defaultTitle }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: defaultTitle,
+    description: site.description,
+    images: [site.ogImage.url],
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

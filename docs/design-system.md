@@ -167,10 +167,46 @@ Noto Sans は latin サブセットだけ読むので、和文は自動的にス
 
 実績詳細と記事モーダルで共有する。`@tailwindcss/typography` は入れず `globals.css` で定義する。
 
+- **本文は `text-foreground`（黒）**。説明文・メタ情報を muted にするアプリ側のルールとは、
+  ここだけ扱いが違う。長文を読ませる場所なので、段落・リスト・引用・テーブルのセルまで黒で置く
+- 見出しは **20 / 16 / 14px**（`h2` = `text-xl` でセクション見出しに揃える、`h3` = `text-base`、本文 = `text-sm`）。
+  いずれも `font-bold tracking-tight`
 - `h2` に下線は付けない（`font-bold` で階層を作る）
 - **箇条書きの丸はアクセントカラー**（`ul > li::marker { color: var(--primary) }`）。数字（`ol`）は色を変えない
 - テーブルは `display: block` + `width: max-content` + `overflow-x: auto` で、
-  幅が足りないときだけ横スクロールさせる（GitHub の markdown と同じ手法）
+  幅が足りないときだけ横スクロールさせる（GitHub の markdown と同じ手法）。
+  角丸は `pre` / `img` と同じ `rounded-lg`。`border-collapse` だと角がセルに欠かれるので
+  **`border-separate` + `border-spacing: 0`** にして、外周の枠線と角丸はテーブル自身が持ち、
+  セルは内側の罫線だけを引く（`overflow-x` が角丸のクリップも兼ねる）
+
+### カスタムブロック
+
+Markdown だけでは組めないレイアウトは **コンテナディレクティブ**（`:::名前{属性}` 〜 `:::`）で書く。
+入れ子にするときは **外側のコロンを内側より多く** する。
+
+| ブロック | 記法 | 用途 |
+|---|---|---|
+| `columns` / `col` | `::::columns{cols=3}` の中に `:::col` を並べる | 画像 + 見出し + 本文を横並びにするセクション。`cols` は 2 か 3（省略時は `col` の数）。狭い画面では1カラムまで落ちる |
+
+```markdown
+::::columns{cols=3}
+:::col
+![代替テキスト](figma-01.png)
+### 見出し
+本文
+:::
+::::
+```
+
+**ブロックを増やす手順は3つ。**
+
+1. `src/lib/markdown/blocks.ts` の `workBlocks` に1件足す
+2. `globals.css` の `.prose-work [data-block="名前"]` にスタイルを書く
+3. この表に追記する
+
+出力は必ず `data-block="名前"` を持つ要素になる。**Markdown から class は書かせない**
+（任意の class を許すと、トークン外の見た目が本文に混ざるため）。
+未定義の名前や不正な属性値はビルドを止める（素通しすると、書いたつもりのブロックが本文にそのまま出て気づけない）。
 
 ## モーション
 

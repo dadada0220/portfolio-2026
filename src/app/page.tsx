@@ -20,7 +20,8 @@ export default async function HomePage() {
           <>
             {intro.headline}
             <br />
-            <span className="text-muted-foreground">{intro.headlineMuted}</span>
+            {/* <span className="text-muted-foreground">{intro.headlineMuted}</span> */}
+            <span className="">{intro.headlineMuted}</span>
           </>
         }
         description={intro.body.map((line) => (
@@ -33,8 +34,8 @@ export default async function HomePage() {
       <section className="flex flex-col gap-5">
         <SectionHeading
           eyebrow="Works"
-          title="直近の実績"
-          description="担当した案件のうち、公開できるものを掲載しています。"
+          title="最近の実績"
+          description="これまでに携わった案件を掲載しています。"
           action={
             <Button asChild variant="outline" size="sm">
               <Link href="/works">
@@ -55,7 +56,7 @@ export default async function HomePage() {
         <SectionHeading
           eyebrow="Skills"
           title="できること"
-          description="デザインから実装、その後の改善まで。担当できる領域と、その深さ。"
+          description="デザインや実装などのクリエイティブ業務や情報設計、施策立案やデータ分析、AIを用いた開発など幅広い領域に対応できます。"
         />
         <div className="grid gap-4 lg:grid-cols-2">
           {skills.map((skill) => (
