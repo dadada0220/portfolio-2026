@@ -1,11 +1,8 @@
-import Link from "next/link";
-import { Mail } from "lucide-react";
 
 import { PageHeader, SectionHeading } from "@/components/page-header";
 import { SkillItem } from "@/components/skill-item";
 import { ViewAllLink } from "@/components/view-all-link";
 import { WorkCard } from "@/components/work-card";
-import { Button } from "@/components/ui/button";
 import { intro, skills } from "@/lib/profile";
 import { withLineBreaks } from "@/lib/text";
 import { getWorks } from "@/lib/works";
