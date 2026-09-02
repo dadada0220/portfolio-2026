@@ -1,48 +1,64 @@
-import type { LucideIcon } from "lucide-react";
+import type { ReactNode } from "react";
+import Image from "next/image";
 
+import type { SkillIcon } from "@/components/skill-icons";
+import { withLineBreaks } from "@/lib/text";
 import { cn } from "@/lib/utils";
 
 /**
  * スキル1件。
- * アイコンタイルにだけグラデーションを使い、本文はニュートラルのまま置く。
- * （色を面で使わず点で使うことで、賑やかさと落ち着きを両立させる）
+ *
+ * 面の作りはサイト共通の `surface-card`。
+ * 見出し行は **24px のタイル + 16px の塗りアイコン（白）**。
+ * タイルの下地は実績と同じ抽象素材。**暗い覆いは敷かず、彩度を上げて**白いグリフを立たせる
+ * （覆いで暗くすると素材の色が濁るため）。仕上げにグリフ自身の影で輪郭を確保する。
+ * 「その他」だけは色を持たせず、同じ素材を無彩色にして使う。
+ * **押せない要素なのでホバーでは動かさない**（design-system「ホバー」）。
+ *
+ * 余白は情報のまとまりで決める。
+ *   タイル ⇔ タイトル … 8px（横並びで1行の見出し）
+ *   見出し ⇔ 本文     … 12px
  */
 export function SkillItem({
   title,
-  lines,
+  body,
   icon: Icon,
-  tile,
+  thumbnail,
+  neutral = false,
 }: {
   title: string;
-  lines: string[];
-  icon: LucideIcon;
-  tile: 1 | 2 | 3 | 4 | 5 | 6;
+  /** 文字列に `<br />` と書けば改行になる。JSXで組んでもよい */
+  body: ReactNode;
+  icon: SkillIcon;
+  thumbnail: string;
+  /** 「その他」だけは色を持たせず無彩色にする */
+  neutral?: boolean;
 }) {
   return (
     <div className="surface-card flex flex-col gap-3 p-5">
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2">
         <span
           aria-hidden
-          className={cn(
-            "flex size-9 shrink-0 items-center justify-center rounded-lg text-white shadow-sm",
-            `tile-${tile}`
-          )}
+          className="relative flex size-6 shrink-0 items-center justify-center overflow-hidden rounded-md bg-muted ring-1 ring-foreground/10"
         >
-          <Icon className="size-[18px]" />
+          <Image
+            src={thumbnail}
+            alt=""
+            fill
+            sizes="24px"
+            className={cn(
+              "object-cover",
+              neutral ? "grayscale" : "saturate-220"
+            )}
+          />
+          <Icon className="relative size-4 text-white drop-shadow-glyph" />
         </span>
-        <h3 className="text-base font-bold tracking-tight">{title}</h3>
+        <h3 className="text-[0.9375rem] font-bold tracking-tight">{title}</h3>
       </div>
 
-      <ul className="flex flex-col gap-0.5">
-        {lines.map((line) => (
-          <li
-            key={line}
-            className="relative pl-4 text-sm leading-relaxed text-muted-foreground before:absolute before:top-[0.6em] before:left-0 before:size-1 before:rounded-full before:bg-primary"
-          >
-            {line}
-          </li>
-        ))}
-      </ul>
+      <p className="text-sm leading-relaxed text-muted-foreground">
+        {withLineBreaks(body)}
+      </p>
     </div>
   );
 }

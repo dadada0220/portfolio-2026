@@ -7,6 +7,7 @@ import { ViewAllLink } from "@/components/view-all-link";
 import { WorkCard } from "@/components/work-card";
 import { Button } from "@/components/ui/button";
 import { intro, skills } from "@/lib/profile";
+import { withLineBreaks } from "@/lib/text";
 import { getWorks } from "@/lib/works";
 
 export default async function HomePage() {
@@ -25,9 +26,9 @@ export default async function HomePage() {
             <span className="">{intro.headlineMuted}</span>
           </>
         }
-        description={intro.body.map((line) => (
-          <span key={line} className="block">
-            {line}
+        description={intro.body.map((line, index) => (
+          <span key={index} className="block">
+            {withLineBreaks(line)}
           </span>
         ))}
       />
@@ -52,14 +53,14 @@ export default async function HomePage() {
           title="できること"
           description="デザインや実装などのクリエイティブ業務や情報設計、施策立案やデータ分析、AIを用いた開発など幅広い領域に対応できます。"
         />
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {skills.map((skill) => (
             <SkillItem key={skill.title} {...skill} />
           ))}
         </div>
       </section>
 
-      <section className="surface-card relative overflow-hidden p-8 sm:p-10">
+      {/* <section className="surface-card relative overflow-hidden p-8 sm:p-10">
         <div
           aria-hidden
           className="bg-glow pointer-events-none absolute inset-0"
@@ -84,7 +85,7 @@ export default async function HomePage() {
             </Button>
           </div>
         </div>
-      </section>
+      </section> */}
     </>
   );
 }

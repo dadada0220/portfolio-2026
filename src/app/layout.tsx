@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Noto_Sans } from "next/font/google";
+import { Zen_Kaku_Gothic_New } from "next/font/google";
 
 import { AppShell } from "@/components/app-shell";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,12 +8,19 @@ import { site } from "@/lib/site";
 import "./globals.css";
 
 /**
- * 欧文は Noto Sans、和文は游ゴシック（OS標準）。
- * Noto Sans は latin サブセットだけ読むので、和文はスタックの次点＝游ゴシックに落ちる。
+ * 欧文・和文とも Zen Kaku Gothic New。
+ *
+ * 可変フォントではないので、使うウェイトを明示する。
+ * **本文 500 / 太字 700 の2つだけ**（400は使わない。和文が細く見えるため本文を500に置いている）。
+ * `subsets` は**プリロードする範囲**の指定で、実際に配信されるのはこれだけではない。
+ * 和文のグリフは unicode-range で細かく分割された woff2 として同時に self-host され、
+ * ブラウザは必要な範囲だけを取りに行く（Google Fonts に "japanese" という
+ * 名前付きサブセットが無いため、`subsets` には latin しか渡せない）。
  * 実際の合成は globals.css の --font-sans。
  */
-const notoSans = Noto_Sans({
-  variable: "--font-noto-sans",
+const zenKakuGothicNew = Zen_Kaku_Gothic_New({
+  variable: "--font-zen-kaku",
+  weight: ["500", "700"],
   subsets: ["latin"],
   display: "swap",
 });
@@ -52,7 +59,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="ja" className={`${notoSans.variable} h-full`}>
+    <html lang="ja" className={`${zenKakuGothicNew.variable} h-full`}>
       <body className="min-h-full">
         {/* ツールチップはアイコンだけのボタンの補足なので、待たせずに即出す */}
         <TooltipProvider delayDuration={0}>

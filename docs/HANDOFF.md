@@ -336,7 +336,7 @@ frontmatterは design-doc.md §5.2 を参照。本文は「課題 → 取り組�
 - **ピル型のアイブロウ** — 枠線 + グラデーションのドット。全ページの `PageHeader` と各 `SectionHeading` に適用
 - **グラデーション** — 色数は増やさず、primary(blue) → violet の**1系統だけ**。
   `--gradient-brand`（主アクション・ドット）/ `--gradient-surface`（全体の下地）/
-  `--gradient-glow`（ページ上部のにじみ）/ `--tile-1`〜`--tile-6`（スキルのアイコンタイル）
+  `--gradient-glow`（ページ上部のにじみ）
 - **ウェイトのメリハリ** — 見出しを `font-semibold` → `font-bold`、サイズも一段上げた
 - **面をグラデーションで塗らない。** 点（ドット・アイコンタイル）と、ほとんど見えない下地にだけ使う
 

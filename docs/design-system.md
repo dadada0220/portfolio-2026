@@ -37,7 +37,6 @@
 - アクティブなナビ項目のアイコン
 - フォーカスリング
 - **アイブロウのドット**（`Eyebrow` コンポーネント内の小さな丸）
-- **スキルカードのアイコンタイル**（`tile-1`〜`tile-6`）
 - **ページ上部のにじみ**（`bg-glow`）とセクションの下地（`bg-surface-gradient`）
 
 それ以外の表現:
@@ -56,7 +55,6 @@
 | `--gradient-brand` | `bg-brand-sweep` | 主アクションのボタン。ホバーで位置が動くよう広く敷く |
 | `--gradient-surface` | `bg-surface-gradient` | アプリシェル全体の下地 |
 | `--gradient-glow` | `bg-glow` | ページ上部・CTAブロックの淡いにじみ |
-| `--tile-1` 〜 `--tile-6` | `tile-1` 〜 `tile-6` | スキルカードのアイコンタイル（blue → violet の6段） |
 
 面をグラデーションで塗らない。**点（ドット・アイコンタイル）と、ほとんど見えない下地にだけ使う。**
 
@@ -69,13 +67,15 @@ v1 スコープ外。ただし `.dark` のトークンは定義済みなので�
 
 ## タイポグラフィ
 
-**欧文は Noto Sans、和文は游ゴシック**（OS標準）。
-Noto Sans は latin サブセットだけ読むので、和文は自動的にスタックの次点へ落ちる。
+**欧文・和文とも Zen Kaku Gothic New**（`next/font/google` で self-host）。
+OSごとの字面の差を作らないため、和文もWebフォントで揃える。
+
+可変フォントではないので、**使うウェイトは 400 / 500 / 700 の3つだけ**。
+`font-semibold`(600) は当てない（持っていないウェイトは合成太字になる）。
 本文基準は **14px**。マーケサイト的な大文字ヒーローは作らない。
 
 ```
---font-sans: var(--font-noto-sans), "Yu Gothic Medium", "游ゴシック Medium",
-             YuGothic, "游ゴシック体", "Yu Gothic", "游ゴシック", "Hiragino Sans",
+--font-sans: var(--font-zen-kaku), "Hiragino Sans",
              "Hiragino Kaku Gothic ProN", Meiryo, system-ui, sans-serif;
 --font-mono: var(--font-sans);   /* 字面は同じ。数字だけ tabular-nums で揃える */
 ```
@@ -91,9 +91,20 @@ Noto Sans は latin サブセットだけ読むので、和文は自動的にス
 | ラベル | `text-sm font-medium` |
 | 本文・説明文 | `text-sm text-muted-foreground` |
 | メタ情報（日付・タグ） | `text-xs text-muted-foreground` |
-| 数値・ドメイン・キー | `font-mono text-xs`（游ゴシック + `tabular-nums`） |
+| 数値・ドメイン・キー | `font-mono text-xs`（本文と同じ字面 + `tabular-nums`） |
 
 `h1`〜`h4` には `font-feature-settings: "palt"` が globals.css で当たっている（和文の字間詰め）。
+
+`next/font` の `subsets` は**プリロードする範囲**の指定。Google Fonts に "japanese" という
+名前付きサブセットが無いので `["latin"]` しか渡せないが、和文のグリフは unicode-range で
+分割された woff2 として同時に self-host され（3ウェイト × 121範囲 = 363ファイル）、
+ブラウザが必要な範囲だけを取りに行く。
+
+## 変数に書く本文
+
+`src/lib/profile.tsx` の `skills.body` / `timeline.description` / `intro.body` は
+**`string` ではなく `ReactNode`**。改行を入れたいときは `<>…<br />…</>` と書ける
+（このファイルが `.tsx` なのはそのため）。
 
 ---
 
@@ -141,7 +152,9 @@ Noto Sans は latin サブセットだけ読むので、和文は自動的にス
 絞り込みの切り替えは `Segmented`（`src/components/segmented.tsx`）1つに統一する。
 実績一覧（リンク）とブックマーク（ボタン）で同じ見た目を共有する。
 
-- 一段沈んだレール（`border` + `bg-muted`）の上を、**選択中の1枚だけが白く浮く**（`bg-card` + `shadow-sm` + リング）
+- **レールに枠線は引かない。** 一段沈んだ面（`bg-muted`）の上を、
+  **選択中の1枚だけが白く浮く**（`bg-card` + `shadow-chip`）。構造は面の明暗と影だけで見せる
+- レールの内側に 4px の余白を取り、つまみが浮いていることを見せる（全体の高さは 32px のまま）
 - 文字は **13px**、**太さは選択状態で変えない**
 - **選択で文字の太さを変えない**のは共通の原則。太さが変わると幅が動き、
   隣の項目が押し出されたり、タグの列が段落ちしたりする。
@@ -182,6 +195,10 @@ Noto Sans は latin サブセットだけ読むので、和文は自動的にス
 
 **lucide-react のみ**（アイコンセットを2つ混ぜない）。
 
+例外は2つだけ。どちらも lucide が持っていないものを自前で用意している。
+- `brand-icons.tsx` — GitHub / Zenn のブランドマーク（lucide v1 がブランドアイコンを廃止）
+- `skill-icons.tsx` — スキルカードの**塗りアイコン**（lucide は線のセットで、塗りを持たない）
+
 - サイズは 3段階: `size-[18px]` / `size-4`（16px, 既定）/ `size-[13px]`
 - `stroke-width: 1.75` は globals.css で全体に適用済み
 - サイドバーの各ナビ項目にアイコンを付け、**アクティブ時のみ** `text-primary`
@@ -206,6 +223,14 @@ Noto Sans は latin サブセットだけ読むので、和文は自動的にス
 ヒーローのように画像を背景にするときは、**覆い（`bg-hero-scrim`）を敷いてから
 `text-on-image` / `text-on-image-muted` で置く**。素材の明るさに関わらず可読性が決まる。
 `text-white` のような生の色をコンポーネントに書かない（トークンは `globals.css` の1箇所）。
+
+**小さいタイルの上に白いグリフを置くとき**（スキルカードの24pxタイル）は、
+**暗い覆いを敷かず、素材の彩度を上げて**（`saturate-220`）グリフを立たせる。
+覆いで暗くすると素材の色が濁るため。仕上げに `drop-shadow-glyph` で輪郭を確保する。
+
+素材は領域ごとに色で選ぶ（デザイン=赤 / フロント=黄橙 / バック=青 / 施策=緑 / AI=紫）。
+**「その他」だけは色を持たせず `grayscale`**。カテゴリ色ではないことを無彩色で示す。
+淡い素材（クリーム系・淡青系）は彩度を上げても白が沈むので、タイルには使わない。
 
 ## Markdown 本文（`.prose-work`）
 

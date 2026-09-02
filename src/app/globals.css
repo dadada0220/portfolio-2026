@@ -65,9 +65,13 @@
   --shadow-xs: var(--elevation-sm);
   --shadow-sm: var(--elevation-sm);
   --shadow-md: var(--elevation);
-  /* 実績カードの立体感（検討中）。面を1枚持ち上げる二段の影 */
+  /* 実績カードの立体感。面を1枚持ち上げる二段の影 */
   --shadow-lift: var(--elevation-lift);
   --shadow-lift-hover: var(--elevation-lift-hover);
+  /* セグメントコントロールの選択中のつまみ */
+  --shadow-chip: var(--elevation-chip);
+  /* 画像の上に白いグリフを置くとき。明るい素材でも輪郭が沈まないようにする */
+  --drop-shadow-glyph: 0 1px 1.5px hsl(240 10% 3.9% / 0.45);
 }
 
 :root {
@@ -142,14 +146,6 @@
   ),
   radial-gradient(50% 90% at 85% 10%, hsl(258 80% 62% / 0.07), transparent 70%);
 
-  /* スキルカードのアイコンタイル。blue → violet を6段に割る */
-  --tile-1: linear-gradient(135deg, hsl(221 83% 56%), hsl(232 80% 62%));
-  --tile-2: linear-gradient(135deg, hsl(232 80% 56%), hsl(243 78% 63%));
-  --tile-3: linear-gradient(135deg, hsl(243 78% 58%), hsl(254 76% 64%));
-  --tile-4: linear-gradient(135deg, hsl(254 76% 58%), hsl(265 74% 64%));
-  --tile-5: linear-gradient(135deg, hsl(265 74% 58%), hsl(276 72% 63%));
-  --tile-6: linear-gradient(135deg, hsl(210 12% 42%), hsl(220 10% 30%));
-
   /* 影は 2 段階まで。sm が既定、無印はポップオーバー/ドロワー専用 */
   --elevation-sm: 0 1px 2px 0 hsl(240 6% 10% / 0.05);
   --elevation:
@@ -161,12 +157,17 @@
   --elevation-lift-hover:
     0 1px 2px 0 hsl(240 6% 10% / 0.08), 0 18px 40px -14px hsl(240 6% 10% / 0.2);
 
-  /* 欧文は Noto Sans、和文は游ゴシック（OS標準）。
-     Noto Sans は latin しか持たないので、和文は自動的に次点へ落ちる */
+  /* セグメントの選択中のつまみ。小さい面なので、近くに落ちる短い影だけで浮かせる */
+  --elevation-chip:
+    0 1px 2px 0 hsl(240 6% 10% / 0.1), 0 3px 8px -2px hsl(240 6% 10% / 0.12);
+
+  /* 欧文・和文とも Zen Kaku Gothic New。OSごとの字面の差を作らない。
+     可変フォントではないので、使うウェイトは **本文 500 / 太字 700 の2つだけ**
+     （持っていないウェイトを当てると合成太字になるので、font-normal と
+     font-semibold は使わない） */
   --font-sans:
-    var(--font-noto-sans), "Yu Gothic Medium", "游ゴシック Medium", YuGothic,
-    "游ゴシック体", "Yu Gothic", "游ゴシック", "Hiragino Sans",
-    "Hiragino Kaku Gothic ProN", Meiryo, system-ui, sans-serif;
+    var(--font-zen-kaku), "Hiragino Sans", "Hiragino Kaku Gothic ProN", Meiryo,
+    system-ui, sans-serif;
   /* 数値・ドメイン・ラベル用。字面は游ゴシックのまま、数字だけ等幅に揃える */
   --font-mono: var(--font-sans);
 
@@ -235,6 +236,8 @@
     0 1px 2px 0 hsl(0 0% 0% / 0.5), 0 10px 24px -10px hsl(0 0% 0% / 0.6);
   --elevation-lift-hover:
     0 1px 2px 0 hsl(0 0% 0% / 0.6), 0 18px 40px -14px hsl(0 0% 0% / 0.7);
+  --elevation-chip:
+    0 1px 2px 0 hsl(0 0% 0% / 0.5), 0 3px 8px -2px hsl(0 0% 0% / 0.6);
 
   color-scheme: dark;
 }
@@ -248,6 +251,8 @@
     /* 管理画面の情報密度に合わせて本文基準は 14px */
     font-size: 14px;
     line-height: 1.65;
+    /* 本文は 500。Zen Kaku Gothic New は 400 だと和文が細く見える */
+    font-weight: 500;
   }
   html {
     @apply font-sans antialiased;
@@ -306,7 +311,7 @@
     @apply text-foreground underline underline-offset-4 hover:no-underline;
   }
   .prose-work strong {
-    @apply font-medium text-foreground;
+    @apply font-bold text-foreground;
   }
   .prose-work code {
     @apply rounded-sm bg-muted px-1 py-0.5 font-mono text-xs;
@@ -449,15 +454,6 @@
   background-image: var(--gradient-glow);
 }
 
-/* スキルカードのアイコンタイル */
-@layer components {
-  .tile-1 { background-image: var(--tile-1); }
-  .tile-2 { background-image: var(--tile-2); }
-  .tile-3 { background-image: var(--tile-3); }
-  .tile-4 { background-image: var(--tile-4); }
-  .tile-5 { background-image: var(--tile-5); }
-  .tile-6 { background-image: var(--tile-6); }
-}
 
 /* ============================================================
    なめらかな角丸（スーパー楕円）

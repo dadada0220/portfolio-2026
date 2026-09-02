@@ -80,8 +80,10 @@ shadcn/ui の CSS variables 規約に準拠（Tailwind v4 の `@theme` にマッ
 | `text-sm text-muted-foreground` | 本文・説明文 | 14px / 400 |
 | `text-xs text-muted-foreground` | メタ情報（日付・タグ） | 12px / 400 |
 
-- フォント: **游ゴシック**（OS標準・Webフォントなし）。`font-feature-settings: "palt"` を和文見出しに適用
-  （草案は Inter + Noto Sans JP + JetBrains Mono だったが、サイト全体を游ゴシックに統一する方針に変更）
+- フォント: **Zen Kaku Gothic New**（`next/font/google` で self-host、欧文・和文とも同じ。400/500/700 の3ウェイト）。
+  `font-feature-settings: "palt"` を和文見出しに適用
+  （草案は Inter + Noto Sans JP + JetBrains Mono → 一度OS標準の游ゴシックに寄せた後、
+  OSごとの字面差を無くすため Webフォントに一本化）
 - 管理画面らしく本文基準は 14px。マーケサイト的な大文字ヒーローは作らない
 
 ### 2.4 スペーシング・レイアウト

@@ -1,7 +1,11 @@
+import type { ReactNode } from "react";
+
+import { withLineBreaks } from "@/lib/text";
+
 export function Timeline({
   items,
 }: {
-  items: { period: string; title: string; description: string }[];
+  items: { period: string; title: string; description: ReactNode }[];
 }) {
   return (
     <ol className="flex flex-col">
@@ -24,7 +28,9 @@ export function Timeline({
             <h3 className="text-[0.9375rem] font-bold tracking-tight">
               {item.title}
             </h3>
-            <p className="text-sm text-muted-foreground">{item.description}</p>
+            <p className="text-sm text-muted-foreground">
+              {withLineBreaks(item.description)}
+            </p>
           </div>
         </li>
       ))}

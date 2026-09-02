@@ -135,7 +135,7 @@ export function ArticleDialog({
                   ) : null}
                 </div>
 
-                <h2 className="text-lg font-semibold tracking-tight">
+                <h2 className="text-lg font-bold tracking-tight">
                   {article.title}
                 </h2>
 

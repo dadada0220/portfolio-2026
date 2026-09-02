@@ -7,7 +7,8 @@ import { cn } from "@/lib/utils";
  * セグメントコントロール。
  *
  * 一段沈んだレールの上を、選択中の1枚だけが白く浮く。
- * 選択中は **面（白 + 影 + リング）で示し、文字の太さは変えない**
+ * レールに枠線は引かず、**面の明暗と、つまみに落ちる影だけ**で構造を見せる。
+ * 選択中は面で示し、**文字の太さは変えない**
  * — 太さが変わると幅が動いて、隣の項目が押し出されるため。
  *
  * `href` を渡すとリンクとして描画する（実績一覧はURLに状態を持たせるのでJS不要）。
@@ -21,9 +22,9 @@ export type SegmentedItem = {
 };
 
 const ITEM =
-  "inline-flex h-7 shrink-0 items-center justify-center rounded-md px-3 text-[0.8125rem] font-medium whitespace-nowrap transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
+  "inline-flex h-6 shrink-0 items-center justify-center gap-1.5 rounded-md px-3 text-[0.8125rem] font-medium whitespace-nowrap transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
 
-const ACTIVE = "bg-card text-foreground shadow-sm ring-1 ring-foreground/10";
+const ACTIVE = "bg-card text-foreground shadow-chip";
 const INACTIVE = "text-muted-foreground hover:text-foreground";
 
 export function Segmented({
@@ -45,7 +46,7 @@ export function Segmented({
       role={items[0]?.href ? undefined : "group"}
       aria-label={label}
       className={cn(
-        "inline-flex w-fit max-w-full items-center gap-0.5 overflow-x-auto rounded-lg border bg-muted p-0.5",
+        "inline-flex w-fit max-w-full items-center gap-0.5 overflow-x-auto rounded-lg bg-muted p-1",
         className
       )}
     >
